@@ -1,9 +1,7 @@
 import { Server as NetServer } from "http";
 import { NextApiRequest } from "next";
 import { Server as ServerIO } from "socket.io";
-
 import { NextApiResponseServerIO } from "@/types";
-import getCurrentUser from "@/actions/getCurrentUserPage";
 
 export const config = {
   api: {
@@ -11,33 +9,37 @@ export const config = {
   },
 };
 
-const ioHandler = async (req: NextApiRequest, res: NextApiResponseServerIO) => {
-  const user = await getCurrentUser(req);
+let userStatus: { [key: string]: string } = {};
+
+const ioHandler = (req: NextApiRequest, res: NextApiResponseServerIO) => {
   if (!res.socket.server.io) {
-    const path = "/api/socket/io";
     const httpServer: NetServer = res.socket.server as any;
     const io = new ServerIO(httpServer, {
-      path: path,
-      // @ts-ignore
+      path: "/api/socket/io",
+      //@ts-ignore
       addTrailingSlash: false,
     });
+
     res.socket.server.io = io;
 
-    io.on("connection", (socket) => { // Fixed here
-      console.log("a user connected");
+     io.on("connection", (socket) => {
+      const userId = socket.handshake.query.userId;
 
-      socket.broadcast.emit("user-connected", user.id);
+      if (typeof userId !== 'string' || typeof userId === "undefined") {
+        // Log error or handle this situation
+        console.error("userId must be a string");
+        return;
+      }
+
+      io.emit('userStatusChanged', { userId, type: "add" }); 
 
       socket.on("disconnect", () => {
-        console.log(`User disconnected`);
+        io.emit('userStatusChanged', { userId, type: 'remove' }); 
+      });
+    }); 
+  }
 
-        socket.broadcast.emit("user-disconnected", user.id);
-      })
-    })
-
-  };
-
-  res.end();
+  res.end(); 
 }
 
 export default ioHandler;

@@ -4,7 +4,7 @@ import { cn } from "@/lib/utils";
 import { User } from "@prisma/client";
 import Image from "next/image";
 import placeholderImage from "@/public/images/placeholder.png";
-import useUserStatus from "@/hooks/use-page-visibility";
+import useUserAvailabilityStatus from "@/hooks/use-visibility";
 
 interface UserProfileButtonProps {
   user?: User;
@@ -12,7 +12,7 @@ interface UserProfileButtonProps {
   onClick?: () => void;
   className?: string;
   showBadge?: boolean
-  width? : number | `${number}` | undefined;
+  width?: number | `${number}` | undefined;
   height?: number | `${number}` | undefined;
 }
 
@@ -25,15 +25,15 @@ const UserProfileButton: React.FC<UserProfileButtonProps> = ({
   height,
   showBadge,
 }) => {
-  const status = useUserStatus(user?.id);
   const images = user?.image || src || placeholderImage;
   const altText = user?.name ? `${user.name} profile` : "User Profile";
-  let statusColor = "";
+  const status = useUserAvailabilityStatus(user?.id!);
+  let statusColor = "bg-gray-500";
 
   if (status === "Online") {
     statusColor = "bg-green-500"
 
-  }  else if (status === "Idle") {
+  } else if (status === "Idle") {
     statusColor = "bg-yellow-500"
 
   } else if (status === "Offline") {
@@ -49,6 +49,14 @@ const UserProfileButton: React.FC<UserProfileButtonProps> = ({
         alt={altText}
         className="rounded-full"
       />
+      {showBadge && (
+        <span
+          className={cn(
+            "absolute bottom-0 right-0 w-3 h-3 rounded-full border-2 border-white",
+            statusColor
+          )}
+        ></span>
+      )}
     </div>
   );
 };

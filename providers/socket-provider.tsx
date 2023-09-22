@@ -1,5 +1,7 @@
 "use client";
 
+import useConnectedUsersStore from "@/hooks/use-user-status";
+import { User } from "@prisma/client";
 import {
   createContext,
   useContext,
@@ -11,13 +13,11 @@ import { io as ClientIO } from "socket.io-client";
 type SocketContextType = {
   socket: any | null;
   isConnected: boolean;
-  connectedUsers: string[];
 };
 
 const SocketContext = createContext<SocketContextType>({
   socket: null,
   isConnected: false,
-  connectedUsers: [],
 });
 
 export const useSocket = () => {
@@ -25,18 +25,26 @@ export const useSocket = () => {
 };
 
 export const SocketProvider = ({
-  children
+  children,
+  user,
 }: {
-  children: React.ReactNode
+  children: React.ReactNode,
+  user: User,
 }) => {
   const [socket, setSocket] = useState(null);
   const [isConnected, setIsConnected] = useState(false);
-  const [connectedUsers, setConnectedUsers] = useState<string[]>([]);
+  const { modifyUsers } = useConnectedUsersStore();
 
   useEffect(() => {
+
+    if (!user) return;
+
     const socketInstance = new (ClientIO as any)(process.env.NEXT_PUBLIC_SITE_URL!, {
       path: "/api/socket/io",
       addTrailingSlash: false,
+      query: {
+        userId: user.id
+      }
     });
 
     socketInstance.on("connect", () => {
@@ -47,12 +55,8 @@ export const SocketProvider = ({
       setIsConnected(false);
     });
 
-    socketInstance.on("user-connected", (userId: string) => {
-      setConnectedUsers((prevUsers) => [...prevUsers, userId]);
-    });
-
-    socketInstance.on("user-disconnected", (userId: string) => {
-      setConnectedUsers((prevUsers) => prevUsers.filter((id) => id !== userId));
+    socketInstance.on("userStatusChanged", ({ userId, type }: { userId: string; type: "add" | "remove"}) => {
+      modifyUsers(userId, type);
     });
 
     setSocket(socketInstance);
@@ -63,7 +67,7 @@ export const SocketProvider = ({
   }, []);
 
   return (
-    <SocketContext.Provider value={{ socket, isConnected, connectedUsers }}>
+    <SocketContext.Provider value={{ socket, isConnected }}>
       {children}
     </SocketContext.Provider>
   )

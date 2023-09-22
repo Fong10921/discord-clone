@@ -1,5 +1,4 @@
 "use client";
-
 import { SessionProvider } from "next-auth/react"
 
 interface AuthContextProps {
@@ -9,6 +8,7 @@ interface AuthContextProps {
 const AuthProvider: React.FC<AuthContextProps> = ({
   children
 }) => {
+  
   return (
     <SessionProvider>
       {children}

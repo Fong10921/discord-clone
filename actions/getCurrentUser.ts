@@ -1,5 +1,6 @@
 import prisma from "@/lib/prismadb";
 import getSession from "./getSession";
+import { useUserStore } from "@/hooks/use-user-info";
 
 const getCurrentUser = async () => {
   const session = await getSession();
@@ -24,10 +25,9 @@ const getCurrentUser = async () => {
         id: null,
       };
     };
-
     return { user, id: user.id };
   } catch (error: any) {
-    console.log("GET_CURRENT_USER_FAILED", { status: 500});
+    console.log("GET_CURRENT_USER_FAILED", { status: 500 });
     return { user: null, id: null };
   }
 }

@@ -8,9 +8,6 @@ import {
   DialogTitle,
 } from "../ui/dialog";
 import { useModal } from "@/hooks/use-modal-store";
-import { Label } from "../ui/label";
-import { Input } from "../ui/input";
-import { Button } from "../ui/button";
 import {
   Check,
   Gavel,

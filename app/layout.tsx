@@ -7,17 +7,19 @@ import { cn } from "@/lib/utils";
 import ModalProvider from "@/providers/modal-provider";
 import { SocketProvider } from "@/providers/socket-provider";
 import { QueryProvider } from "@/providers/query-provider";
+import getCurrentUser from "@/actions/getCurrentUser";
 
 export const metadata: Metadata = {
   title: "Discord Clone",
   description: "Tutorial by CodeWithAntonio",
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const { user } = await getCurrentUser();
   return (
     <AuthProvider>
       <html lang="en" suppressHydrationWarning>
@@ -28,7 +30,7 @@ export default function RootLayout({
             enableSystem={false}
             storageKey="Something Unique"
           >
-            <SocketProvider>
+            <SocketProvider user={user!}>
               <ToasterProvider />
               <ModalProvider />
               <QueryProvider>{children}</QueryProvider>
