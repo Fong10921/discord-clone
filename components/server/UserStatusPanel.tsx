@@ -5,6 +5,7 @@ import UserProfileButton from "../UserProfileButton";
 import useUserAvailabilityStatus from "@/hooks/use-visibility";
 import ActionToolTip from "../ActionToolTip";
 import { useState } from "react";
+import Link from "next/dist/client/link";
 
 interface UserStatusPanelProps {
   user: User;
@@ -140,7 +141,12 @@ const UserStatusPanel: React.FC<UserStatusPanelProps> = ({ user }) => {
           </div>
         </ActionToolTip>
         <ActionToolTip side="top" label="User Settings">
-          <div className="hover:bg-zinc-700 transition p-1 hover:cursor-pointer">{settingSVG}</div>
+          <Link
+            className="hover:bg-zinc-700 transition p-1 hover:cursor-pointer"
+            href="/settings"
+          >
+            {settingSVG}
+          </Link>
         </ActionToolTip>
       </div>
     </div>
