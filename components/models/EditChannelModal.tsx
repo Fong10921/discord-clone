@@ -81,9 +81,9 @@ const EditChannelModal = () => {
       });
 
       await axios.patch(url, values);
-      toast.success("Channel Created");
+      toast.success("Channel Edited");
       form.reset();
-      router.refresh();
+      router.replace(`/servers/${server?.id}/channels/${channel?.id}`);
       onClose();
     } catch (error: any) {
       console.log(error);
@@ -176,7 +176,7 @@ const EditChannelModal = () => {
             </div>
             <DialogFooter className="bg-gray-100 px-6 py-4">
               <Button disabled={isLoading} variant="primary">
-                Create
+                Edit
               </Button>
             </DialogFooter>
           </form>

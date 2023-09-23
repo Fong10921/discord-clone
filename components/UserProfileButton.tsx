@@ -11,7 +11,7 @@ interface UserProfileButtonProps {
   src?: string;
   onClick?: () => void;
   className?: string;
-  showBadge?: boolean
+  showBadge?: boolean;
   width?: number | `${number}` | undefined;
   height?: number | `${number}` | undefined;
 }
@@ -31,17 +31,21 @@ const UserProfileButton: React.FC<UserProfileButtonProps> = ({
   let statusColor = "bg-gray-500";
 
   if (status === "Online") {
-    statusColor = "bg-green-500"
-
+    statusColor = "bg-green-500";
   } else if (status === "Idle") {
-    statusColor = "bg-yellow-500"
-
+    statusColor = "bg-yellow-500";
   } else if (status === "Offline") {
-    statusColor = "bg-gray-500"
+    statusColor = "bg-gray-500";
   }
 
   return (
-    <div onClick={onClick} className={cn("rounded-full w-12 h-12 hover:cursor-pointer flex items-center justify-center", className)}>
+    <div
+      onClick={onClick}
+      className={cn(
+        "relative rounded-full w-12 h-12 hover:cursor-pointer flex items-center justify-center",
+        className
+      )}
+    >
       <Image
         src={images}
         width={width}
@@ -49,14 +53,20 @@ const UserProfileButton: React.FC<UserProfileButtonProps> = ({
         alt={altText}
         className="rounded-full"
       />
-      {showBadge && (
+    {showBadge && (
         <span
-          className={cn(
-            "absolute bottom-0 right-0 w-3 h-3 rounded-full border-2 border-white",
-            statusColor
-          )}
+            style={{
+                position: 'absolute',
+                bottom: '30%',  // Adjust this value to place it at the 3/4th of the circle
+                left: '65%',  // Adjust to ensure it is half-outside the parent div
+                transform: 'translateY(50%)',  // Adjusting translateY to shift badge downward
+            }}
+            className={cn(
+                "w-4 h-4 rounded-full border-2 border-black",
+                statusColor
+            )}
         ></span>
-      )}
+    )}
     </div>
   );
 };

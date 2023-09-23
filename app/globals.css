@@ -82,6 +82,10 @@ body,
   }
 }
 
+.strikethrough-2Kl6HF {
+  color: red;
+}
+
 @media (max-width: 767px) {
   /* 768px is the default starting size for 'md' in Tailwind */
   .hidden-below-md {
