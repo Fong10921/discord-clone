@@ -144,6 +144,7 @@ const UserStatusPanel: React.FC<UserStatusPanelProps> = ({ user }) => {
           <Link
             className="hover:bg-zinc-700 transition p-1 hover:cursor-pointer"
             href="/settings"
+            replace
           >
             {settingSVG}
           </Link>
