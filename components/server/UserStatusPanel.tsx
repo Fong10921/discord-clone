@@ -108,22 +108,20 @@ const UserStatusPanel: React.FC<UserStatusPanelProps> = ({ user }) => {
 
   return (
     <div className="dark:bg-zinc-800 flex flex-row items-center">
-      <div>
-        <div className="m-2 my-2 flex hover:bg-zinc-700 transition hover:border hover:border-[bg-zinc-800] pr-2">
-          <UserProfileButton
-            user={user}
-            showBadge={true}
-            width={32}
-            height={32}
-            className="p-0"
-          />
-          <div className="mt-2">
-            <p className="text-sm text-semibold">{user.name}</p>
-            <p className="text-[0.750rem] font-extralight">{status}</p>
-          </div>
+      <div className="m-2 my-2 flex flex-1 hover:bg-zinc-700 transition hover:border hover:border-[bg-zinc-800] pr-2">
+        <UserProfileButton
+          user={user}
+          showBadge={true}
+          width={32}
+          height={32}
+          className="p-0"
+        />
+        <div className="mt-2">
+          <p className="text-sm text-semibold">{user.name}</p>
+          <p className="text-[0.750rem] font-extralight">{status}</p>
         </div>
       </div>
-      <div className="flex space-x-1">
+      <div className="flex space-x-1 flex-1">
         <ActionToolTip side="top" align="center" label={microphoneLabel}>
           <div
             onClick={() => handleIconState("microphone")}
