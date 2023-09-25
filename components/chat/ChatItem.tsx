@@ -77,6 +77,11 @@ const ChatItem: React.FC<ChatItemProps> = ({
         query: socketQuery,
       });
 
+      if (content === values.content) {
+        setIsEditing(false);
+        return;
+      }
+
       await axios.patch(url, values);
 
       form.reset();
@@ -89,7 +94,7 @@ const ChatItem: React.FC<ChatItemProps> = ({
   const onMemberClick = () => {
     if (member.id === currentMember.id) {
       return;
-    } 
+    }
 
     router.replace(`/servers/${params?.serverId}/conversations/${member.id}`)
   }
@@ -178,7 +183,7 @@ const ChatItem: React.FC<ChatItemProps> = ({
               className={cn(
                 "text-sm text-zinc-600 dark:text-zinc-300",
                 deleted &&
-                  "italic text-zinc-500 dark:text-zinc-400 text-xs mt-1"
+                "italic text-zinc-500 dark:text-zinc-400 text-xs mt-1"
               )}
             >
               {content}
@@ -192,7 +197,7 @@ const ChatItem: React.FC<ChatItemProps> = ({
           {!fileUrl && isEditing && (
             <Form {...form}>
               <form
-                className="flex items-center w-full gap-x-2 pt-2"
+                className="flex items-center w-full gap-x-2 pt-2 relative"
                 onSubmit={form.handleSubmit(onSubmit)}
               >
                 <FormField
@@ -201,7 +206,7 @@ const ChatItem: React.FC<ChatItemProps> = ({
                   render={({ field }) => (
                     <FormItem className="flex-1">
                       <FormControl>
-                        <div className="relative w-full">
+                        <div className="relative">
                           <Input
                             disabled={isLoading}
                             {...field}
@@ -229,7 +234,7 @@ const ChatItem: React.FC<ChatItemProps> = ({
           {canEditMessage && (
             <ActionToolTip label="Edit">
               <Edit
-                onClick={() => setIsEditing(true)}
+                onClick={() => setIsEditing(!isEditing)}
                 className="cursor-pointer ml-auto w-4 h-4 text-zinc-500 hover:text-zinc-600 dark:hover:text-zinc-300 transition"
               />
             </ActionToolTip>
