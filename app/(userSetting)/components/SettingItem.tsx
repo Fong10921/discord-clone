@@ -25,7 +25,7 @@ const SettingItem: React.FC<SettingItemProps> = ({
   }
 
   return (
-    <div onClick={handleClick} className="py-[6px] rounded-lg pl-2 mb-1 hover:cursor-pointer font-extrabold tracking-wide text-zinc-300 text-[1rem] w-[90%] hover:text-zinc-100 hover:bg-zinc-700/50">
+    <div onClick={handleClick} className="py-[6px] rounded-lg pl-2 hover:cursor-pointer font-medium tracking-wide text-zinc-300 text-[1rem] w-[90%] hover:text-zinc-100 hover:bg-zinc-700/50">
       {settingName}
     </div>
   );

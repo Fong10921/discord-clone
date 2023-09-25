@@ -1,6 +1,6 @@
 import { create } from "zustand";
 
-export type SettingPagesType = "myAccount" | "profile";
+export type SettingPagesType = "myAccount" | "profile" | "privacyAndSafety" | "familyCenter" | "authorizedApps" | "devices" | "connections" | "friendRequests" | "nitro" | "serverBoost" | "subscriptions" | "giftInventory" | "billing" | "appearance" | "accessibility" | "voiceAndVideo" | "textAndImages" | "notifications" | "keybinds" | "language" | "streamerMode" | "advanced" | "activityPrivacy" | "whatsNew" | "merch" | "hypeSquad";
 
 interface SettingStoreModal {
   openType: SettingPagesType | null;
