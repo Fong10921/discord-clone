@@ -86,6 +86,20 @@ body,
   color: red;
 }
 
+.closeButton-PCZcma {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex: 0 0 36px;
+  border-width: 2px;
+  border-style: solid;
+  border-radius: 50%;
+  width: 36px;
+  height: 36px;
+  cursor: pointer;
+  box-sizing: border-box
+};
+
 @media (max-width: 767px) {
   /* 768px is the default starting size for 'md' in Tailwind */
   .hidden-below-md {
