@@ -1,11 +1,10 @@
 import { Separator } from "@/components/ui/separator";
 import SettingItem from "./SettingItem";
-
-interface SettingSideBarProps {}
+import { facebookSVG, instagramSVG, logoutSVG, tiktokSVG, twitterSVG, youtubeSVG } from "@/components/SVG";
 
 const SettingSideBar = () => {
   return (
-    <div className="mt-12 flex flex-1 flex-col">
+    <div className="mt-[3.75rem] flex flex-1 flex-col w-full">
       <div className="text-[0.70rem] ml-2 font-bold tracking-wide text-zinc-400 transition my-2">
         USER SETTINGS
       </div>
@@ -49,11 +48,21 @@ const SettingSideBar = () => {
       <SettingItem settingName="Merch" modalName="merch"/>
       <SettingItem settingName="HypeSquad" modalName="hypeSquad"/>
       <Separator className="bg-zinc-500 my-2 w-[90%]"/>
-      <div className="py-[6px] rounded-lg pl-2 hover:cursor-pointer font-medium tracking-wide text-zinc-300 text-[1rem] w-[90%] hover:text-zinc-100 hover:bg-zinc-700/50">
+      <div className="flex items-center justify-between py-[6px] rounded-lg pl-2 hover:cursor-pointer font-medium tracking-wide text-zinc-300 text-[1rem] w-[90%] hover:text-zinc-100 hover:bg-zinc-700/50">
         Log Out
+        {logoutSVG}
       </div>
       <Separator className="bg-zinc-500 my-2 w-[90%]"/>
-    
+      <div className="flex flex-row space-x-3 my-2 ml-2">
+        {twitterSVG}
+        {instagramSVG}
+        {facebookSVG}
+        {youtubeSVG}
+        {tiktokSVG}
+      </div>
+      <div className="text-xs ml-2 font-bold tracking-wide text-zinc-400 transition my-2 mb-4 pb-16">
+        Great Version
+      </div>
     </div>
   );
 };
