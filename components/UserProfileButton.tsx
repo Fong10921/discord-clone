@@ -42,8 +42,9 @@ const UserProfileButton: React.FC<UserProfileButtonProps> = ({
     <div
       onClick={onClick}
       className={cn(
-        "relative rounded-full w-12 h-12 hover:cursor-pointer flex items-center justify-center",
-        className
+        "relative rounded-full hover:cursor-pointer flex items-center justify-center",
+        className,
+        "w-12 h-12"
       )}
     >
       <Image
@@ -51,7 +52,7 @@ const UserProfileButton: React.FC<UserProfileButtonProps> = ({
         width={width}
         height={height}
         alt={altText}
-        className="rounded-full"
+        className="rounded-full max-w-none"
       />
     {showBadge && (
         <span

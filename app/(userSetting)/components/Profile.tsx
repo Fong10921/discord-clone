@@ -1,3 +1,5 @@
+"use client";
+
 import { useSettingPageModal } from "@/hooks/use-setting-page";
 
 const Profile = () => {
