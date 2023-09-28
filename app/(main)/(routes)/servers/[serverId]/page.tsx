@@ -1,5 +1,4 @@
 import getCurrentUser from "@/actions/getCurrentUser";
-import { useUserStore } from "@/hooks/use-user-info";
 import prismadb from "@/lib/prismadb";
 import { redirect } from "next/navigation";
 

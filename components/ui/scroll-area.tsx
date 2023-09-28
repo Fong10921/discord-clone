@@ -9,6 +9,7 @@ const ScrollBar = React.forwardRef<
   React.ElementRef<typeof ScrollAreaPrimitive.ScrollAreaScrollbar>,
   React.ComponentPropsWithoutRef<typeof ScrollAreaPrimitive.ScrollAreaScrollbar> & { thumbColor?: string }
 >(({ className, orientation = "vertical", thumbColor, ...props }, ref) => (
+
   <ScrollAreaPrimitive.ScrollAreaScrollbar
     ref={ref}
     orientation={orientation}
@@ -25,6 +26,8 @@ const ScrollBar = React.forwardRef<
     <ScrollAreaPrimitive.ScrollAreaThumb className={cn("relative flex-1 rounded-full", thumbColor)} />
   </ScrollAreaPrimitive.ScrollAreaScrollbar>
 ))
+
+ScrollBar.displayName = 'ScrollBar';
 
 // In ScrollArea component, pass thumbColor to ScrollBar
 const ScrollArea = React.forwardRef<
@@ -43,5 +46,7 @@ const ScrollArea = React.forwardRef<
     <ScrollAreaPrimitive.Corner />
   </ScrollAreaPrimitive.Root>
 ))
+
+ScrollArea.displayName = 'ScrollArea';
 
 export { ScrollArea, ScrollBar }

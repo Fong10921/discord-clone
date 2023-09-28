@@ -1,6 +1,5 @@
 import prisma from "@/lib/prismadb";
 import getSession from "./getSession";
-import { useUserStore } from "@/hooks/use-user-info";
 
 const getCurrentUser = async () => {
   const session = await getSession();
