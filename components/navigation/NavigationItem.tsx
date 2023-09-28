@@ -21,12 +21,12 @@ const NavigationItem: React.FC<NavigationItemProps> = ({
   const router = useRouter();
 
   const onClick = () => {
-    router.push(`${id}`)
+    router.push(`/servers/${id}`);
   }
 
   return (
     <ActionToolTip label={name} side="right" align="center">
-      <button onClick={() => onClick()} className="group relative flex items-center">
+      <button onClick={onClick} className="group relative flex items-center">
         <div
           className={cn(
             `absolute left-0 bg-primary rounded-r-full transition-all w-[4px]`,
