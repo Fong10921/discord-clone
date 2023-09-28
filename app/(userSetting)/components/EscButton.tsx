@@ -8,7 +8,7 @@ const ESCButton = () => {
     const [isHovered, setHovered] = useState(false);
 
     return (
-        <Link href="http://localhost:3000">
+        <Link href="/">
             <div className="group mt-[4rem]"
                 onMouseEnter={() => setHovered(true)}
                 onMouseLeave={() => setHovered(false)}

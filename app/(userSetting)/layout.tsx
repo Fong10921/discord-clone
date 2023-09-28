@@ -1,6 +1,5 @@
 import { ScrollArea } from "@/components/ui/scroll-area";
 import SettingSideBar from "./components/SettingSideBar";
-import ESCButton from "./components/EscButton";
 
 const MainLayout = ({ children }: { children: React.ReactNode }) => {
   return (
@@ -16,7 +15,6 @@ const MainLayout = ({ children }: { children: React.ReactNode }) => {
       <main className="md:pl-[35%] h-full">
         {children}
       </main>
-      <ESCButton />
     </div >
   );
 };
