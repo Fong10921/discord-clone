@@ -19,6 +19,9 @@ const buttonVariants = cva(
           "bg-secondary text-secondary-foreground hover:bg-secondary/80",
         ghost: "hover:bg-accent hover:text-accent-foreground",
         link: "text-primary underline-offset-4 hover:underline",
+        primary_discord_blue: "bg-[#5865F2] hover:bg-[#4752C4]",
+        primary_red_destructive: "bg-[#da373c] hover:bg-[#da373c]/50",
+        secondary_red_destructive: "bg-transparent border-2 border-[#da373c] hover:bg-[#da373c]"
       },
       size: {
         default: "h-10 px-4 py-2",
