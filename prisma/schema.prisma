@@ -13,17 +13,22 @@ datasource db {
 model User {
   id             String    @id @default(auto()) @map("_id") @db.ObjectId
   name           String?
+  userName       String?   @unique
+  aboutMe        String?
   email          String?   @unique
   emailVerified  DateTime?
   image          String?
   hashedPassword String?
+  phoneNumber    String?   @unique
+  disable        Boolean   @default(false)
   createdAt      DateTime  @default(now())
   updatedAt      DateTime  @updatedAt
 
-  accounts Account[]
-  servers  Server[]
-  members  Member[]
-  channels Channel[]
+  accounts    Account[]
+  servers     Server[]
+  members     Member[]
+  channels    Channel[]
+  bannerColor BannerColor?
 }
 
 model Account {
@@ -173,3 +178,13 @@ model DirectMessage {
   @@index([memberId])
   @@index([conversationId])
 }
+
+model BannerColor {
+  id      String   @id @default(auto()) @map("_id") @db.ObjectId
+  colorId String[]
+
+  userId String @db.ObjectId @unique
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+
