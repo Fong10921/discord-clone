@@ -86,9 +86,14 @@ body,
   color: red;
 }
 
+.alert-visible {
+  bottom: -110%; 
+  transition: bottom 1s cubic-bezier(0.68, -0.55, 0.27, 1.55)
+}
+
 .small-text-1232asd {
   box-sizing: border-box;
-  color: #B5BAC1;
+  color: #b5bac1;
   text-transform: uppercase;
   letter-spacing: 0.24px;
   font-weight: 700;
@@ -111,8 +116,8 @@ body,
   width: 36px;
   height: 36px;
   cursor: pointer;
-  box-sizing: border-box
-};
+  box-sizing: border-box;
+}
 
 @media (max-width: 767px) {
   /* 768px is the default starting size for 'md' in Tailwind */
