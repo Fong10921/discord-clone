@@ -13,6 +13,7 @@ interface MyAccountProps {
 const MyAccount: React.FC<MyAccountProps> = ({ user }) => {
   const { openType } = useSettingPageModal();
 
+
   if (openType !== "myAccount") {
     return;
   }
