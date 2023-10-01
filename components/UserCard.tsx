@@ -4,11 +4,25 @@ import UserProfileButton from "./UserProfileButton";
 import { User } from "@prisma/client";
 import { Card, CardContent } from "./ui/card";
 import { Button } from "./ui/button";
+import { useSettingPageModal } from "@/hooks/use-setting-page";
+import { useModal } from "@/hooks/use-modal-store";
 interface UserCardProps {
   user: User;
 }
 
 const UserCard: React.FC<UserCardProps> = ({ user }) => {
+
+  const { onOpen } = useSettingPageModal();
+  const { onOpen: onOpenModal } = useModal();
+
+  const handleClickRedirectToProfileSetting = () => {
+    onOpen("profile");
+  }
+
+  const handleClickOpenUsernameModal = () => {
+    onOpenModal("editUsername")
+  }
+
   return (
     <div>
       <Card className="bg-black rounded-2xl w-full flex-row h-[30rem]">
@@ -40,7 +54,7 @@ const UserCard: React.FC<UserCardProps> = ({ user }) => {
                   </p>
                   {user.name}
                 </div>
-                <Button className="bg-[#4E5058] hover:bg-[#6D6F78] text-white h-8 rounded-none">
+                <Button onClick={handleClickRedirectToProfileSetting} className="bg-[#4E5058] hover:bg-[#6D6F78] text-white h-8 rounded-none">
                   Edit
                 </Button>
               </div>
@@ -51,7 +65,7 @@ const UserCard: React.FC<UserCardProps> = ({ user }) => {
                   </p>
                   {user.name}
                 </div>
-                <Button className="bg-[#4E5058] hover:bg-[#6D6F78] text-white h-8 rounded-none">
+                <Button onClick={handleClickOpenUsernameModal} className="bg-[#4E5058] hover:bg-[#6D6F78] text-white h-8 rounded-none">
                   Edit
                 </Button>
               </div>
