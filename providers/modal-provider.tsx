@@ -7,6 +7,7 @@ import DeleteMessageModal from "@/components/models/DeleteMessageModal";
 import DeleteServerModal from "@/components/models/DeleteServerModal";
 import EditChannelModal from "@/components/models/EditChannelModal";
 import EditServerModal from "@/components/models/EditServerModal";
+import EditUsernameModal from "@/components/models/EditUsernameModal";
 import InvitePeopleModal from "@/components/models/InvitePeopleModal";
 import LeaveServerModal from "@/components/models/LeaveServerModal";
 import MembersModal from "@/components/models/MembersModal";
@@ -31,6 +32,7 @@ const ModalProvider = () => {
       <CreateChannelModal />
       <EditServerModal />
       <EditChannelModal />
+      <EditUsernameModal />
       <MembersModal />
       <InvitePeopleModal />
       <MessageFileModal />
