@@ -24,7 +24,7 @@ const getCurrentUser = async () => {
         id: null,
       };
     };
-    return { user, id: user.id };
+    return { user, id: user.id, phoneNumber: user.phoneNumber };
   } catch (error: any) {
     console.log("GET_CURRENT_USER_FAILED", { status: 500 });
     return { user: null, id: null };

@@ -18,7 +18,7 @@ export async function PATCH(
   
   const {
     username,
-    password
+    password,
   } = body;
 
   if (!username || !password) {

@@ -23,7 +23,7 @@ export default async function RootLayout({
   return (
     <AuthProvider>
       <html lang="en" suppressHydrationWarning>
-      <body className={cn("font-MyNewFont", "bg-white dark:bg-[#313338]")}>
+        <body className={cn("font-MyNewFont", "bg-white dark:bg-[#313338]")}>
           <ThemeProvider
             attribute="class"
             defaultTheme=""
@@ -32,8 +32,10 @@ export default async function RootLayout({
           >
             <SocketProvider user={user!}>
               <ToasterProvider />
-              <ModalProvider />
-              <QueryProvider>{children}</QueryProvider>
+              <QueryProvider>
+                <ModalProvider />
+                {children}
+              </QueryProvider>
             </SocketProvider>
           </ThemeProvider>
         </body>

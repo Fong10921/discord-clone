@@ -119,6 +119,11 @@ body,
   box-sizing: border-box;
 }
 
+.PhoneInputInput {
+  padding: 0.5rem;
+  margin-left: 0.5rem;
+}
+
 @media (max-width: 767px) {
   /* 768px is the default starting size for 'md' in Tailwind */
   .hidden-below-md {

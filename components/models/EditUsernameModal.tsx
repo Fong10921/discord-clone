@@ -22,7 +22,6 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { Input } from "../ui/input";
 import { Button } from "../ui/button";
 import axios from "axios";
-import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
 import { useModal } from "@/hooks/use-modal-store";
 
@@ -59,7 +58,6 @@ const formSchema = z.object({
 
 const EditUsernameModal = () => {
   const { isOpen, onClose, type } = useModal();
-  const router = useRouter();
 
   const isModalOpen = isOpen && type === "editUsername";
 
@@ -75,19 +73,23 @@ const EditUsernameModal = () => {
 
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
     try {
-      const response = await axios.patch("/api/settings/myaccount", values);
+      
+      const response = await axios.patch("/api/settings/myAccount/editUsername", {
+        ...values,
+        type: "PATCH: updateUsername"
+      });
 
       if (response.data.error) {
         console.log(response);
         return;
       }
 
-      toast.success("Server Created");
+      toast.success("Username updated");
       form.reset();
       onClose();
     } catch (error: any) {
       console.log(error);
-      toast.error("An error occurred while creating the server."); // Notify user about the error
+      toast.error("An error occurred while updating the server."); // Notify user about the error
     }
   };
 
@@ -158,6 +160,8 @@ const EditUsernameModal = () => {
             <DialogFooter className="px-6 py-4 flex">
               <Button
                 disabled={isLoading}
+                onClick={handleClose}
+                type="button"
                 className="bg-transparent hover:underline text-white hover:bg-transparent"
               >
                 Cancel

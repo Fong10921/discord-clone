@@ -3,8 +3,10 @@
 import UserCard from "@/components/UserCard";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
+import useCurrentUser from "@/hooks/use-current-user";
 import { useSettingPageModal } from "@/hooks/use-setting-page";
 import { User } from "@prisma/client";
+import { useQuery } from "@tanstack/react-query";
 
 interface MyAccountProps {
   user: User;
@@ -13,6 +15,7 @@ interface MyAccountProps {
 const MyAccount: React.FC<MyAccountProps> = ({ user }) => {
   const { openType } = useSettingPageModal();
 
+  const {data} = useQuery(['currentUser'], useCurrentUser, { initialData: user })
 
   if (openType !== "myAccount") {
     return;
@@ -21,7 +24,7 @@ const MyAccount: React.FC<MyAccountProps> = ({ user }) => {
   return (
     <div className="w-full">
       <div className="mb-5 font-bold text-xl w-full">My Account</div>
-      <UserCard user={user} />
+      <UserCard user={data} />
       <Separator className="space-y-12 my-12 w-full bg-[#4E5058]" />
       <div>
         <div>

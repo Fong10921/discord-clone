@@ -9,8 +9,6 @@ export const config = {
   },
 };
 
-let userStatus: { [key: string]: string } = {};
-
 const ioHandler = (req: NextApiRequest, res: NextApiResponseServerIO) => {
   if (!res.socket.server.io) {
     const httpServer: NetServer = res.socket.server as any;

@@ -8,10 +8,12 @@ import DeleteServerModal from "@/components/models/DeleteServerModal";
 import EditChannelModal from "@/components/models/EditChannelModal";
 import EditServerModal from "@/components/models/EditServerModal";
 import EditUsernameModal from "@/components/models/EditUsernameModal";
+import EmailModal from "@/components/models/EmailModal";
 import InvitePeopleModal from "@/components/models/InvitePeopleModal";
 import LeaveServerModal from "@/components/models/LeaveServerModal";
 import MembersModal from "@/components/models/MembersModal";
 import MessageFileModal from "@/components/models/MessageFileModal";
+import PhoneNumberModal from "@/components/models/PhoneNumberModal";
 import { useEffect, useState } from "react";
 
 const ModalProvider = () => {
@@ -34,6 +36,8 @@ const ModalProvider = () => {
       <EditChannelModal />
       <EditUsernameModal />
       <MembersModal />
+      <PhoneNumberModal />
+      <EmailModal />
       <InvitePeopleModal />
       <MessageFileModal />
       <LeaveServerModal />
