@@ -26,9 +26,29 @@ import "react-phone-number-input/style.css";
 import { useEffect } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Input } from "../ui/input";
+import { signIn } from "next-auth/react";
 
 const formSchema = z.object({
   email: z.string().email("Must be a valid email address"),
+  password: z
+    .string()
+    .min(8, "Password must be at least 8 characters long")
+    .refine(
+      (password) => /[a.z]/.test(password),
+      "Password must contain at least one lowercase letter"
+    )
+    .refine(
+      (password) => /[A-Z]/.test(password),
+      "Password must contain at least one uppercase letter"
+    )
+    .refine(
+      (password) => /\d/.test(password),
+      "Password must contain at least one digit"
+    )
+    .refine(
+      (password) => /\W/.test(password),
+      "Password must contain at least one special characters"
+    ),
 });
 
 const EmailModal = () => {
@@ -41,27 +61,32 @@ const EmailModal = () => {
     resolver: zodResolver(formSchema),
     defaultValues: {
       email: "",
+      password: "",
     },
   });
 
   const { setError } = form;
 
-  const updatePATCHPhoneNumber = async (values: z.infer<typeof formSchema>) => {
+  const updatePATCHEmail = async (values: z.infer<typeof formSchema>) => {
     const response = await axios.patch("/api/settings/myAccount/email", values);
-    console.log(response)
-    console.log(response.data.error);
     if (response.data.error === "Email already in use") {
       setError("email", {
         type: "manual",
         message: "The email submitted is already in used",
       });
     }
+
+    await signIn("credentials", {
+      ...values,
+      callbackUrl: window.location.href,
+      redirect: false,
+    });
     return response.data;
   };
 
-  const addPOSTPhoneNumber = async (values: z.infer<typeof formSchema>) => {
+  const addPOSTEmail = async (values: z.infer<typeof formSchema>) => {
     const response = await axios.post("/api/settings/myAccount/email", values);
-    console.log(response)
+    console.log(response);
     console.log(response.data.error);
     if (response.data.error === "Email already in use") {
       setError("email", {
@@ -74,7 +99,7 @@ const EmailModal = () => {
   };
 
   const updateMutation = useMutation({
-    mutationFn: data.user?.email ? updatePATCHPhoneNumber : addPOSTPhoneNumber,
+    mutationFn: data.user?.email ? updatePATCHEmail : addPOSTEmail,
     onSuccess: () => queryClient.invalidateQueries(["currentUser"]),
   });
 
@@ -84,7 +109,8 @@ const EmailModal = () => {
     if (values.email === data?.user?.email) {
       setError("email", {
         type: "manual",
-        message: "The email submitted is the same as the one you currently have",
+        message:
+          "The email submitted is the same as the one you currently have",
       });
       return;
     }
@@ -126,6 +152,27 @@ const EmailModal = () => {
                     <FormItem>
                       <FormLabel className="uppercase small-text-1232asd text-xs">
                         Email
+                      </FormLabel>
+                      <FormControl>
+                        <Input
+                          {...field}
+                          onChange={(value) => field.onChange(value)}
+                          disabled={isLoading}
+                        />
+                      </FormControl>
+                      <FormMessage className="text-red-600" />
+                    </FormItem>
+                  );
+                }}
+              />
+              <FormField
+                control={form.control}
+                name="password"
+                render={({ field }) => {
+                  return (
+                    <FormItem>
+                      <FormLabel className="uppercase small-text-1232asd text-xs">
+                        Password
                       </FormLabel>
                       <FormControl>
                         <Input

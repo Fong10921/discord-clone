@@ -63,7 +63,7 @@ const UserCard: React.FC<UserCardProps> = ({ user }) => {
             />
             <div className="pl-1 text-[1.25rem] font-bold ">{user?.name}</div>
           </div>
-          <Button className="mt-3 mr-4 text-sm py-0 tracking-wide px-4 text-white font-[590] h-8 rounded-none" variant="primary_discord_blue">
+          <Button onClick={handleClickRedirectToProfileSetting} className="mt-3 mr-4 text-sm py-0 tracking-wide px-4 text-white font-[590] h-8 rounded-none" variant="primary_discord_blue">
             Edit User Profile
           </Button>
         </div>
