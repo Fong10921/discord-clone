@@ -65,45 +65,49 @@ const EmailModal = () => {
     },
   });
 
-  const { setError } = form;
+  const { setError, formState: { errors, isLoading, isSubmitSuccessful } } = form;
 
   const updatePATCHEmail = async (values: z.infer<typeof formSchema>) => {
-    const response = await axios.patch("/api/settings/myAccount/email", values);
-    if (response.data.error === "Email already in use") {
-      setError("email", {
-        type: "manual",
-        message: "The email submitted is already in used",
+    let response;
+    try {
+      response = await axios.patch("/api/settings/myAccount/email", values);
+    } catch (error: any) {
+      if (error.response.data === "Email already in use") {
+        setError("email", {
+          type: "manual",
+          message: "The email submitted is already in used",
+        });
+      }
+    } finally {
+      await signIn("credentials", {
+        ...values,
+        callbackUrl: window.location.href,
+        redirect: false,
       });
+      return response?.data;
     }
-
-    await signIn("credentials", {
-      ...values,
-      callbackUrl: window.location.href,
-      redirect: false,
-    });
-    return response.data;
   };
 
   const addPOSTEmail = async (values: z.infer<typeof formSchema>) => {
-    const response = await axios.post("/api/settings/myAccount/email", values);
-    console.log(response);
-    console.log(response.data.error);
-    if (response.data.error === "Email already in use") {
-      setError("email", {
-        type: "manual",
-        message: "The email submitted is already in used",
-      });
+    let response;
+    try {
+      response = await axios.post("/api/settings/myAccount/email", values);
+    } catch (error: any) {
+      if (error.response.data === "Email already in use") {
+        setError("email", {
+          type: "manual",
+          message: "The email submitted is already in used",
+        });
+      }
+    } finally {
+      return response?.data;
     }
-
-    return response.data;
   };
 
   const updateMutation = useMutation({
     mutationFn: data.user?.email ? updatePATCHEmail : addPOSTEmail,
     onSuccess: () => queryClient.invalidateQueries(["currentUser"]),
   });
-
-  const { isLoading, isSuccess } = updateMutation;
 
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
     if (values.email === data?.user?.email) {
@@ -123,10 +127,10 @@ const EmailModal = () => {
   };
 
   useEffect(() => {
-    if (isSuccess) {
+    if (isSubmitSuccessful && !errors && !isLoading) {
       handleClose();
     }
-  }, [isSuccess]);
+  }, []);
 
   return (
     <Dialog open={isModalOpen} onOpenChange={handleClose}>

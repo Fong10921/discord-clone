@@ -4,18 +4,20 @@ import UserCard from "@/components/UserCard";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import useCurrentUser from "@/hooks/use-current-user";
+import { useModal } from "@/hooks/use-modal-store";
 import { useSettingPageModal } from "@/hooks/use-setting-page";
 import { User } from "@prisma/client";
 import { useQuery } from "@tanstack/react-query";
 
 interface MyAccountProps {
-  user: User;
+  user: User | undefined;
 }
 
 const MyAccount: React.FC<MyAccountProps> = ({ user }) => {
   const { openType } = useSettingPageModal();
+  const { onOpen: onOpenModal } = useModal();
 
-  const {data} = useQuery(['currentUser'], useCurrentUser, { initialData: user })
+  const { data } = useQuery(['currentUser'], useCurrentUser, { initialData: user })
 
   if (openType !== "myAccount") {
     return;
@@ -31,7 +33,7 @@ const MyAccount: React.FC<MyAccountProps> = ({ user }) => {
           <h1 className="mb-5 font-bold text-xl w-full">
             Password and Authentication
           </h1>
-          <Button className="mt-3 mr-3 mb-5 text-sm py-0 tracking-wide px-4 text-white font-[590] h-8 rounded-none" variant="primary_discord_blue">
+          <Button onClick={() => onOpenModal("changePassword", { utils: user?.hashedPassword})} className="mt-3 mr-3 mb-5 text-sm py-0 tracking-wide px-4 text-white font-[590] h-8 rounded-none" variant="primary_discord_blue">
             Change Password
           </Button>
           <h3 className="small-text-1232asd">Two-Factor Authentication</h3>

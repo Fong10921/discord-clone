@@ -29,7 +29,7 @@ export async function POST(
   })
 
   if (existingUser) {
-    throw new Error("User already existed")
+    return new NextResponse("User already existed", { status: 409 });
   }
 
   const hashedPassword = await bcrypt.hash(password, 12);
@@ -41,6 +41,12 @@ export async function POST(
       hashedPassword,
       emailVerified: new Date(),
       image: "",
+      bannerColor: {
+        create: {
+          colorValue: "#000000",
+          isActive: true,
+        }
+      }
     }
   })
 

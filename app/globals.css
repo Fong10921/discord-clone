@@ -124,6 +124,20 @@ body,
   margin-left: 0.5rem;
 }
 
+[data-state="checked"] .switch-text::before {
+  position: absolute;
+  left: 50%;
+  transform: translateX(150%);
+  z-index: 20;
+}
+
+[data-state="unchecked"] .switch-text::before {
+  position: absolute;
+  left: 50%;
+  transform: translateX(0%);
+  z-index: 20;
+}
+
 @media (max-width: 767px) {
   /* 768px is the default starting size for 'md' in Tailwind */
   .hidden-below-md {

@@ -1,5 +1,7 @@
 "use client";
 
+import BannerColorModal from "@/components/models/BannerColor";
+import ChangePasswordModal from "@/components/models/ChangePasswordModal";
 import CreateChannelModal from "@/components/models/CreateChannelModal";
 import CreateServerModal from "@/components/models/CreateServerModal";
 import DeleteChannelModal from "@/components/models/DeleteChannelModal";
@@ -37,7 +39,9 @@ const ModalProvider = () => {
       <EditUsernameModal />
       <MembersModal />
       <PhoneNumberModal />
+      <ChangePasswordModal />
       <EmailModal />
+      <BannerColorModal />
       <InvitePeopleModal />
       <MessageFileModal />
       <LeaveServerModal />

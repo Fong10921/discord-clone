@@ -1,7 +1,7 @@
-import { Channel, ChannelType, Server, User } from "@prisma/client";
+import { BannerColor, Channel, ChannelType, Server, User } from "@prisma/client";
 import { create } from "zustand";
 
-export type ModalType = "createServer" | "invitePeople" | "editServer" | "members" | "createChannel" | "leaveServer" | "deleteServer" | "deleteChannel" | "editChannel" | "messageFile" | "deleteMessage" | "editUsername" | "phoneNumber" | "email";
+export type ModalType = "createServer" | "invitePeople" | "editServer" | "members" | "createChannel" | "leaveServer" | "deleteServer" | "deleteChannel" | "editChannel" | "messageFile" | "deleteMessage" | "editUsername" | "phoneNumber" | "email" | "bannerColor" | "changePassword";
 
 interface ModalData {
   user?: User;
@@ -10,6 +10,8 @@ interface ModalData {
   channelType?: ChannelType;
   apiUrl?: string;
   query?: Record<string, any>;
+  bannerColor?: BannerColor;
+  utils?: any;
 }
 
 interface ModalStore {

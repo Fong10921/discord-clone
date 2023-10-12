@@ -6,7 +6,13 @@ import useUserAvailabilityStatus from "@/hooks/use-visibility";
 import ActionToolTip from "../ActionToolTip";
 import { useState } from "react";
 import Link from "next/dist/client/link";
-import { settingSVG, microphoneSVG, strikethroughHeadphoneSVG, strikethroughMicrophoneSVG, headphoneSVG } from "../SVG";
+import {
+  settingSVG,
+  microphoneSVG,
+  strikethroughHeadphoneSVG,
+  strikethroughMicrophoneSVG,
+  headphoneSVG,
+} from "../SVG";
 
 interface UserStatusPanelProps {
   user: User;
@@ -28,9 +34,17 @@ const UserStatusPanel: React.FC<UserStatusPanelProps> = ({ user }) => {
     }
   };
 
+  const truncateUsername = (username: string | null) => {
+    if (username && username.length > 10) {
+      const truncated = username.slice(0, 10);
+      return `${truncated}...`;
+    }
+    return username;
+  }
+
   return (
     <div className="dark:bg-zinc-800 flex flex-row items-center">
-      <div className="m-2 my-2 flex flex-1 hover:bg-zinc-700 transition hover:border hover:border-[bg-zinc-800] pr-2">
+      <div className="my-2 m-1 pr-2 flex hover:bg-zinc-700 hover:border hover:border-[bg-zinc-800] flex-1">
         <UserProfileButton
           user={user}
           showBadge={true}
@@ -39,7 +53,11 @@ const UserStatusPanel: React.FC<UserStatusPanelProps> = ({ user }) => {
           className="p-0"
         />
         <div className="mt-2">
-          <p className="text-sm text-semibold">{user.name}</p>
+          <p
+            className="text-[0.8rem] text-semibold"
+          >
+            {truncateUsername(user?.name)}
+          </p>
           <p className="text-[0.750rem] font-extralight">{status}</p>
         </div>
       </div>

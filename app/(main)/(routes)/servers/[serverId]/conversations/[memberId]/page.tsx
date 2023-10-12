@@ -5,7 +5,7 @@ import ChatInput from "@/components/chat/ChatInput";
 import ChatMessages from "@/components/chat/ChatMessages";
 import { getOrCreateConversation } from "@/lib/conversation";
 import prismadb from "@/lib/prismadb";
-import { redirect, useSearchParams } from "next/navigation";
+import { redirect } from "next/navigation";
 
 interface MemberIdPageProps {
   params: {

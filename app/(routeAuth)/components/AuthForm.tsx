@@ -82,6 +82,7 @@ const AuthForm = () => {
   let formSchema = null;
   const [isLoading, setIsLoading] = useState(false);
   const [variant, setVariant] = useState<Variant>("LOGIN");
+  const [alreadyExistedError, setAlreadyExistedError] = useState(false);
 
   const title = variant === "LOGIN" ? "Login" : "Sign Up";
   const router = useRouter();
@@ -109,11 +110,17 @@ const AuthForm = () => {
           },
   });
 
+  const { reset: resetForm, setError } = form;
+
   const toggleVariant = useCallback(() => {
     if (variant === "LOGIN") {
       setVariant("REGISTER");
+      setAlreadyExistedError(false);
+      resetForm();
     } else {
       setVariant("LOGIN");
+      setAlreadyExistedError(false);
+      resetForm();
     }
   }, [variant]);
 
@@ -123,17 +130,22 @@ const AuthForm = () => {
     setIsLoading(true);
 
     if (variant === "REGISTER") {
-      axios
-        .post("/api/auth/register", data)
-        .then(() => {
+      try {
+        const response = await axios.post("/api/auth/register", data);
+
+        if (response.status === 200) {
           signIn("credentials", data);
-        })
-        .catch(() => {
-          toast.error("Something went wrong");
-        })
-        .finally(() => {
-          setIsLoading(false);
-        });
+
+        }
+      } catch (error: any) {
+        if (error.response.data === "User already existed") {
+          setAlreadyExistedError(true);
+        }
+      } finally {
+        setIsLoading(false);
+        setAlreadyExistedError(false);
+        resetForm();
+      }
     }
 
     if (variant === "LOGIN") {
@@ -189,10 +201,10 @@ const AuthForm = () => {
           {title}
         </h2>
       </div>
-      <Separator />
+      <Separator className="bg-black"/>
       <Form {...form}>
         <form
-          className="w-full text-black dark:text-white"
+          className="w-full text-black dark:text-white px-4"
           onSubmit={form.handleSubmit(onSubmit)}
         >
           <div className="flex flex-col mx-auto my-9 space-y-8 w-[85%]">
@@ -205,7 +217,7 @@ const AuthForm = () => {
                     <FormLabel className="text-lg">Name</FormLabel>
                     <FormControl>
                       <Input
-                        className="text-black dark:text-white focus:ring-offset-blue-700 focus-visible:ring-0 focus-visible:ring-offset-[5px]"
+                        className="text-black dark:text-white dark:bg-[#2B2D31] bg-[#F2F3F5] shadow-sm focus:ring-offset-blue-700 focus-visible:ring-0 focus-visible:ring-offset-[5px]"
                         disabled={isLoading}
                         placeholder="Name"
                         {...field}
@@ -224,7 +236,7 @@ const AuthForm = () => {
                   <FormLabel className="text-lg">Email</FormLabel>
                   <FormControl>
                     <Input
-                      className="text-black dark:text-white focus:ring-offset-blue-700 focus-visible:ring-0 focus-visible:ring-offset-[5px]"
+                      className="text-black dark:text-white dark:bg-[#2B2D31] bg-[#F2F3F5] shadow-sm focus:ring-offset-blue-700 focus-visible:ring-0 focus-visible:ring-offset-[5px]"
                       disabled={isLoading}
                       placeholder="Email"
                       {...field}
@@ -242,7 +254,7 @@ const AuthForm = () => {
                   <FormLabel className="text-lg">Password</FormLabel>
                   <FormControl>
                     <Input
-                      className="text-black dark:text-white focus:ring-offset-blue-700 focus-visible:ring-0 focus-visible:ring-offset-[5px]"
+                      className="text-black dark:text-white dark:bg-[#2B2D31] bg-[#F2F3F5] shadow-sm focus:ring-offset-blue-700 focus-visible:ring-0 focus-visible:ring-offset-[5px]"
                       disabled={isLoading}
                       placeholder="Password"
                       {...field}
@@ -252,19 +264,24 @@ const AuthForm = () => {
                 </FormItem>
               )}
             />
+            <Button
+              disabled={isLoading}
+              type="submit"
+              className="text-white hover:bg-blue-500 transition bg-blue-700 dark:bg-blue-400 hover:opacity-90 text-right"
+            >
+              {variant === "LOGIN" ? "Login" : "Sign Up"}
+            </Button>
+            {alreadyExistedError && (
+              <div className="flex justify-center text-sm mt-6 px-2 mb-3 text-destructive">
+                <div>The account email is already in use</div>
+              </div>
+            )}
           </div>
-          <Button
-            disabled={isLoading}
-            type="submit"
-            className="bg-black-700 text-black dark:text-white hover:bg-blue-700/80 hover:opacity-80"
-          >
-            {variant === "LOGIN" ? "Login" : "Sign Up"}
-          </Button>
           <div className="mt-6 flex gap-2">
             {/* GitHub Button */}
             <AuthSocialButton
               disabled={isLoading}
-              className=" transition text-white"
+              className="bg-black transition text-white hover:opacity-90"
               size={18}
               icon={BsGithub}
               onClick={() => socialAction("github")}
@@ -273,19 +290,19 @@ const AuthForm = () => {
             {/* Google Button */}
             <AuthSocialButton
               disabled={isLoading}
-              className="bg-red-600 transition text-white"
+              className="bg-red-600 transition text-white hover:opacity-90"
               size={18}
               icon={BsGoogle}
               onClick={() => socialAction("google")}
             />
           </div>
-          <div className="flex gap-2 justify-center text-sm mt-6 px-2 text-white">
+          <div className="flex gap-2 justify-center text-sm mt-6  mb-3 text-black dark:text-white">
             <div>
               {variant === "LOGIN"
-                ? "New to our Learning Platform ?"
+                ? "New to discord ?"
                 : "Already have an account ?"}
             </div>
-            <div onClick={toggleVariant} className="underline cursor-pointer">
+            <div onClick={toggleVariant} className="underline cursor-pointer hover:text-blue-500">
               {variant === "LOGIN" ? "Create an account" : "Login"}
             </div>
           </div>
