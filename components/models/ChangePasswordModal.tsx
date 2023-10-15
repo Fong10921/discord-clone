@@ -125,37 +125,40 @@ const ChangePasswordModal = () => {
   const { setError } = form;
 
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
-    const isCorrectPassword = await bcrypt.compare(
-      values.currentPassword,
-      data.utils
-    );
+    try {
+      if (values.newPassword !== values.confirmNewPassword) {
+        setError("newPassword", {
+          type: "manual",
+          message: "Please make sure the new password you entered match",
+        });
+        setError("confirmNewPassword", {
+          type: "manual",
+          message: "Please make sure the new password you entered match",
+        });
+      }
 
-    if (!isCorrectPassword) {
-      setError("currentPassword", {
-        type: "manual",
-        message:
-          "The current password you entered is wrong please check again.",
-      });
+      if (
+        values.currentPassword === values.newPassword ||
+        values.currentPassword === values.confirmNewPassword
+      ) {
+        handleClose();
+        return;
+      }
+
+      setIsLoading(true);
+      updateMutation.mutate(values);
+    } catch (error: any) {
+      if (
+        error.response.data ===
+        "The current password you entered is wrong please check again."
+      ) {
+        setError("currentPassword", {
+          type: "manual",
+          message:
+            "The current password you entered is wrong please check again.",
+        });
+      }
     }
-
-    if (values.newPassword !== values.confirmNewPassword) {
-      setError("newPassword", {
-        type: "manual",
-        message: "Please make sure the new password you entered match",
-      });
-      setError("confirmNewPassword", {
-        type: "manual",
-        message: "Please make sure the new password you entered match",
-      });
-    };
-
-    if (values.currentPassword === values.newPassword || values.currentPassword === values.confirmNewPassword) {
-      handleClose();
-      return;
-    }
-
-    setIsLoading(true);
-    updateMutation.mutate(values);
   };
 
   const handleClose = () => {

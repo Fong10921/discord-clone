@@ -23,8 +23,9 @@ import useBannerColor from "@/hooks/use-bannercolor";
 import { useQuery } from "@tanstack/react-query";
 import useCurrentUser from "@/hooks/use-current-user";
 import { UsersWithBannerColor } from "@/types";
-import { BannerColor, User } from "@prisma/client";
+import { BannerColor } from "@prisma/client";
 import { Textarea } from "@/components/ui/textarea";
+import EmojiPicker from "@/components/chat/EmojiPicker";
 
 interface ProfileProps {
   data: UsersWithBannerColor | null;
@@ -55,7 +56,8 @@ const Profile: React.FC<ProfileProps> = ({ data }) => {
 
   const [profile, setProfile] = useState("user");
   const [isVisible, setIsVisible] = useState(false);
-  const [remainingAbout, setRemainingAbout] = useState<boolean>();
+  const [remainingAbout, setRemainingAbout] = useState<number>(190);
+  const [emojiAbout, setEmojiAbout] = useState<number>();
   const [isLoading, setIsLoading] = useState(false);
 
   const { data: userBannerColorData } = useQuery(
@@ -81,6 +83,18 @@ const Profile: React.FC<ProfileProps> = ({ data }) => {
         user: userData,
       });
     }
+  };
+
+  function countStringLength(str: string): number {
+    return Array.from(str).length;
+  }
+
+  const handleRemainingAbout = (currentValue: string, newValue: string) => {
+    const oldLength = countStringLength(currentValue);
+    const newLength = countStringLength(newValue);
+
+    const difference = newLength - oldLength;
+    setRemainingAbout((prevRemaining) => prevRemaining - difference);
   };
 
   const form = useForm<profileFormValues>({
@@ -122,8 +136,6 @@ const Profile: React.FC<ProfileProps> = ({ data }) => {
   if (openType !== "profile") {
     return;
   }
-
-
 
   return (
     <div className="w-full">
@@ -201,16 +213,37 @@ const Profile: React.FC<ProfileProps> = ({ data }) => {
                           About Me
                         </FormLabel>
                         <FormControl>
-                          <Textarea
-                            disabled={isLoading}
-                            {...field}
-                            onChange={(value) => {
-                              console.log(value);
-                              field.onChange(value)
-                            }}
-                            className="rounded-none focus:ring-offset-0 focus-visible:ring-0 focus-visible:ring-offset-[0px] w-[90%]"
-                          />
-                          <span></span>
+                          <div className="relative p-1 w-[90%] ">
+                            <Textarea
+                              disabled={isLoading}
+                              {...field}
+                              rows={4}
+                              onChange={(e) => {
+                                const currentValue = field.value!;
+                                const newValue = e.target.value;
+
+                                handleRemainingAbout(currentValue, newValue);
+
+                                field.onChange(e);
+                              }}
+                              className="w-full pr-10 focus:ring-offset-0 focus-visible:ring-0 focus-visible:ring-offset-[0px]"
+                              style={{ boxSizing: "border-box" }}
+                            />
+
+                            <span className="absolute right-3 top-3">
+                              <EmojiPicker
+                                onChange={(emoji) => {
+                                  if (emoji) {
+                                    setRemainingAbout(remainingAbout - countStringLength(emoji));
+                                  }
+                                  field.onChange(`${field.value}${emoji}`);
+                                }}
+                              />
+                            </span>
+                            <span className="absolute right-3 bottom-5">
+                              {remainingAbout}
+                            </span>
+                          </div>
                         </FormControl>
                       </FormItem>
                     )}
@@ -272,7 +305,9 @@ const Profile: React.FC<ProfileProps> = ({ data }) => {
                         key={index}
                         style={{
                           backgroundColor: bannerColor.colorValue,
-                          transform: bannerColor.isActive ? 'scale(1.1)' : 'scale(1)',
+                          transform: bannerColor.isActive
+                            ? "scale(1.1)"
+                            : "scale(1)",
                         }}
                         className={cn(
                           `w-20 h-14 cursor-pointer relative rounded-md box-content`,

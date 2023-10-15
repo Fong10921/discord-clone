@@ -32,7 +32,6 @@ const EmojiPicker: React.FC<EmojiPickerProps> = ({ onChange }) => {
           theme={resolvedTheme}
           data={data}
           onEmojiSelect={(emoji: any) => {
-            console.log(emoji); // check the log to see if it's correct
             onChange(emoji.native);
           }}
         />}
