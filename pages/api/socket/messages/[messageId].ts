@@ -1,6 +1,6 @@
 import getCurrentUser from "@/actions/getCurrentUserPage";
 import prismadb from "@/lib/prismadb";
-import { NextApiResponseServerIO } from "@/types";
+import { NextApiResponseServerIO } from "@/constants/types/types";
 import { Member, MemberRole } from "@prisma/client";
 import { NextApiRequest } from "next";
 

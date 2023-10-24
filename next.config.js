@@ -1,4 +1,5 @@
 /** @type {import('next').NextConfig} */
+
 const nextConfig = {
   experimental: {
     turbo: {
@@ -15,11 +16,13 @@ const nextConfig = {
       },
     },
   },
-  webpack: (config) => {
-    config.externals.push({
-      "utf-8-validate": "commonjs utf-8-validate",
-      bufferutil: "commonjs bufferutil"
-    });
+  webpack: (config, { isServer, dev }) => {
+    if (dev && !isServer) {
+      config.externals.push({
+        "utf-8-validate": "commonjs utf-8-validate",
+        bufferutil: "commonjs bufferutil"
+      });
+    }
 
     return config;
   },

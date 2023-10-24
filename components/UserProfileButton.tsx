@@ -7,7 +7,7 @@ import placeholderImage from "@/public/images/placeholder.png";
 import useUserAvailabilityStatus from "@/hooks/use-visibility";
 
 interface UserProfileButtonProps {
-  user?: User;
+  user?: User
   src?: string;
   onClick?: () => void;
   className?: string;
@@ -25,9 +25,8 @@ const UserProfileButton: React.FC<UserProfileButtonProps> = ({
   height,
   showBadge,
 }) => {
-  const images = user?.image || src || placeholderImage;
-  const altText = user?.name ? `${user.name} profile` : "User Profile";
-  const status = useUserAvailabilityStatus(user?.id!);
+  const images = src || placeholderImage;
+ const status = useUserAvailabilityStatus(user?.id!); 
   let statusColor = "bg-gray-500";
 
   if (status === "Online") {
@@ -51,7 +50,7 @@ const UserProfileButton: React.FC<UserProfileButtonProps> = ({
         src={images}
         width={width}
         height={height}
-        alt={altText}
+        alt={"Profile Picture"}
         className="rounded-full max-w-none"
       />
     {showBadge && (

@@ -40,22 +40,21 @@ const UserStatusPanel: React.FC<UserStatusPanelProps> = ({ user }) => {
       return `${truncated}...`;
     }
     return username;
-  }
+  };
 
   return (
     <div className="dark:bg-zinc-800 flex flex-row items-center">
       <div className="my-2 m-1 pr-2 flex hover:bg-zinc-700 hover:border hover:border-[bg-zinc-800] flex-1">
         <UserProfileButton
           user={user}
+          src={user?.image!}
           showBadge={true}
           width={32}
           height={32}
           className="p-0"
         />
         <div className="mt-2">
-          <p
-            className="text-[0.8rem] text-semibold"
-          >
+          <p className="text-[0.8rem] text-semibold">
             {truncateUsername(user?.name)}
           </p>
           <p className="text-[0.750rem] font-extralight">{status}</p>

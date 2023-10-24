@@ -7,7 +7,7 @@ import Image from "next/image";
 import "@uploadthing/react/styles.css";
 
 interface FileUploadProps {
-  endpoint: "messageFile" | "serverImage";
+  endpoint: "messageFile" | "serverImage" | "profileImage";
   onChange: (url?: string) => void;
   value: string;
 }
@@ -68,6 +68,7 @@ const FileUpload: React.FC<FileUploadProps> = ({
       onClientUploadComplete={(res) => {
         return onChange(res?.[0].url);
       }}
+      className="text-white"
       onUploadError={(error: Error) => console.log(error)}
     />
   );

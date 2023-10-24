@@ -23,7 +23,13 @@ export const ourFileRouter = {
 
   messageFile: f(["image", "pdf"]).middleware(() => handleAuth()).onUploadComplete(() => {
     toast.success("Upload image or pdf Successfully");
-  })
+  }),
+
+  profileImage: f({ image: { maxFileSize: "4MB", maxFileCount: 1 } })
+  .middleware(() => handleAuth())
+  .onUploadComplete(() => {
+    toast.success("Upload Image Successfully");
+  }),
 
 } satisfies FileRouter;
 

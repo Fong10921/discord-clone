@@ -2,6 +2,7 @@
 
 import BannerColorModal from "@/components/models/BannerColor";
 import ChangePasswordModal from "@/components/models/ChangePasswordModal";
+import ChangeProfilePicture from "@/components/models/ChangeProfilePicture";
 import CreateChannelModal from "@/components/models/CreateChannelModal";
 import CreateServerModal from "@/components/models/CreateServerModal";
 import DeleteChannelModal from "@/components/models/DeleteChannelModal";
@@ -40,6 +41,7 @@ const ModalProvider = () => {
       <MembersModal />
       <PhoneNumberModal />
       <ChangePasswordModal />
+      <ChangeProfilePicture />
       <EmailModal />
       <BannerColorModal />
       <InvitePeopleModal />

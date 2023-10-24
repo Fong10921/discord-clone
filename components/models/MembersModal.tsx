@@ -20,7 +20,7 @@ import {
 } from "lucide-react";
 import { useState } from "react";
 import axios from "axios";
-import { ServerWithMembersWithUsers } from "@/types";
+import { ServerWithMembersWithUsers } from "@/constants/types/types";
 import { ScrollArea } from "../ui/scroll-area";
 import UserProfileButton from "../UserProfileButton";
 import {

@@ -60,6 +60,7 @@ const UserCard: React.FC<UserCardProps> = ({ user }) => {
               width={80}
               height={80}
               showBadge={true}
+              src={user?.image!}
             />
             <div className="pl-1 text-[1.25rem] font-bold ">{user?.name}</div>
           </div>

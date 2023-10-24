@@ -1,6 +1,6 @@
 import getCurrentUserPage from "@/actions/getCurrentUserPage";
 import prismadb from "@/lib/prismadb";
-import { NextApiResponseServerIO } from "@/types";
+import { NextApiResponseServerIO } from "@/constants/types/types";
 import { NextApiRequest } from "next";
 
 export default async function handler(

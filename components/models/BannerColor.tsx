@@ -26,7 +26,7 @@ import { useEffect, useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Sketch } from "@uiw/react-color";
 import { Switch } from "../ui/switch";
-import { UsersWithBannerColor } from "@/types";
+import { UsersWithBannerColor } from "@/constants/types/types";
 
 const colorSchema = z.object({
   r: z.number().min(0).max(255),
@@ -65,7 +65,7 @@ const formSchema = z.object({
       .regex(/^#[0-9a-fA-F]{8}$/)
       .optional(),
   }),
-  isActive: z.union([z.string(), z.boolean()]),
+  isActive: z.union([z.string(), z.boolean()]).optional(),
 });
 
 const BannerColorModal = () => {
@@ -82,9 +82,8 @@ const BannerColorModal = () => {
     (item) => item.colorValue === data.utils
   );
 
-  const [isActive, setIsActive] = useState<boolean | undefined>(
-    matchingColorObject?.isActive
-  );
+  const [isActive, setIsActive] = useState<boolean>(false);
+
   const form = useForm({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -93,7 +92,7 @@ const BannerColorModal = () => {
     },
   });
 
-  const updatePATCHBannerColor = async (values: z.infer<typeof formSchema>) => {
+  const updatePATCHBannerColor: any = async (values: z.infer<typeof formSchema>) => {
     let response;
     const newValue = { ...values, colorId: matchingColorObject?.id };
     try {
@@ -121,10 +120,10 @@ const BannerColorModal = () => {
     }
   };
 
-  const DeleteBannerColor = async (values: string) => {
+  const DeleteBannerColor = async (id: string) => {
     let response;
     try {
-      response = await axios.post("/api/settings/profile/bannerColor", values);
+      response = await axios.delete("/api/settings/profile/bannerColor", { data: { id } });
     } catch (error: any) {
     } finally {
       setIsLoading(false);
@@ -146,7 +145,7 @@ const BannerColorModal = () => {
   const { isSuccess } = updateMutation;
 
   const onSubmit = async (values: any) => {
-    /* The reason we check for empty object because if empty it means the user havent move the picker thus remind same as the default color if the user have it */
+    /* The reason we check for empty object because if empty it means the user havent move the picker thus remind same as the default color*/
     setIsLoading(true);
     if (
       Object.keys(values?.bannerColor || {}).length === 0 &&
@@ -167,8 +166,15 @@ const BannerColorModal = () => {
 
   const handleClose = () => {
     form.reset();
+    setIsActive(matchingColorObject?.isActive!)
     onClose();
   };
+
+  useEffect(() => {
+    if (matchingColorObject?.isActive !== undefined) {
+      setIsActive(matchingColorObject.isActive);
+    }
+  }, [matchingColorObject]);
 
   useEffect(() => {
     if (!isLoading || isSuccess) {
@@ -224,11 +230,11 @@ const BannerColorModal = () => {
                         <Switch
                           className="data-[state=checked]:bg-red-500 data-[state=unchecked]:bg-blue-500 h-6 w-11 mt-24"
                           {...field}
-                          onCheckedChange={() => {
-                            field.onChange();
+                          onCheckedChange={(value) => {
+                            field.onChange(value);
                             setIsActive(!isActive);
                           }}
-                          defaultChecked={!matchingColorObject?.isActive}
+                          defaultChecked={matchingColorObject?.isActive}
                           thumbStyle="h-4"
                           disabled={isLoading}
                         />
@@ -240,28 +246,28 @@ const BannerColorModal = () => {
               />
             </div>
             <DialogFooter className="px-6 py-4 flex">
-              <Button
+            <Button
                 disabled={isLoading}
                 type="button"
                 onClick={handleClose}
-                className="bg-transparent hover:underline text-white hover:bg-transparent"
+                variant={"secondary"}
+                className=" hover:underline text-white"
               >
                 Cancel
               </Button>
               <Button
                 disabled={isLoading}
                 type="button"
-                onClick={() => onDelete(matchingColorObject?.id!)}
+                onClick={() => onDelete(data?.utils)}
                 variant={"destructive"}
-                className="bg-transparent hover:underline text-white hover:bg-transparent"
+                className="hover:underline text-white hover:opacity-90"
               >
                 Delete
               </Button>
               <Button
                 disabled={isLoading}
-                variant="primary_discord_blue"
-                type="submit"
-                className="text-white"
+                variant="primary"
+                className="hover:underline text-white hover:opacity-90"
               >
                 {data?.utils ? "Update" : "Create"}
               </Button>

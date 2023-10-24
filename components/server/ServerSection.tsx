@@ -1,6 +1,6 @@
 "use client";
 
-import { ServerWithMembersWithUsers } from "@/types";
+import { ServerWithMembersWithUsers } from "@/constants/types/types";
 import { ChannelType, MemberRole } from "@prisma/client";
 import ActionToolTip from "../ActionToolTip";
 import { Plus, Settings } from "lucide-react";
