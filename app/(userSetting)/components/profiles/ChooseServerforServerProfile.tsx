@@ -21,17 +21,17 @@ import Image from "next/image";
 
 interface ChooseServerforServerProfile {
   userServerList: DesensitizationServer[];
-  setChoosenServer: Dispatch<
-    SetStateAction<{ server: DesensitizationServer | null }>
-  >;
+  setChoosenServer: Dispatch<SetStateAction<DesensitizationServer>>;
+  choosenServer: DesensitizationServer;
 }
 
 const ChooseServerforServerProfile: React.FC<ChooseServerforServerProfile> = ({
   userServerList,
   setChoosenServer,
+  choosenServer,
 }) => {
   const [open, setOpen] = useState(false);
-  const [value, setValue] = useState(userServerList[0]);
+  const [value, setValue] = useState(choosenServer ? choosenServer : userServerList[0]);
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
@@ -58,7 +58,7 @@ const ChooseServerforServerProfile: React.FC<ChooseServerforServerProfile> = ({
       <PopoverContent className="w-[42.5rem] p-0">
         <Command className="w-full">
           <CommandInput
-            placeholder="Search framework..."
+            placeholder="Search Server..."
             className="h-9 w-full"
           />
           <CommandEmpty>No server found.</CommandEmpty>
@@ -70,7 +70,7 @@ const ChooseServerforServerProfile: React.FC<ChooseServerforServerProfile> = ({
                 onSelect={() => {
                   setValue(server);
                   setOpen(false);
-                  setChoosenServer({ server: server });
+                  setChoosenServer(server);
                 }}
               >
                 <Image

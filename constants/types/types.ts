@@ -15,6 +15,7 @@ import {
   desensitizationArrayforUserServerData,
 } from "../../utils/desensitizationDatabaseData";
 
+
 export type ServerWithMembersWithUsers = Server & {
   members: (Member & {
     user: User;
@@ -56,15 +57,15 @@ export type DesensitizationServer = Omit<
   DesensitizationServerFieldsUnion
 >;
 
-export type BannerColorWithDesensitizedUsers = DesensitizedUser & {
-  bannerColor: DesensitizedBannerColor[];
+export type DesensitizedUserBannerColor = DesensitizedUser & {
+  bannerColor: DesensitizedBannerColor[]; 
 };
 
 export type BannerColorWithUsers = User & {
   bannerColor: BannerColor[];
 };
 
-export type DesensitizedUserServerDataWithDesensitizedBannerColor =
+export type DesensitizedUserServerDataBannerColor =
   DesensitizedUserServerData & {
-    BannerColor: DesensitizedBannerColor[];
+    bannerColor: DesensitizedBannerColor[];
   };

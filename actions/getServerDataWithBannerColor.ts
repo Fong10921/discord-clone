@@ -11,7 +11,7 @@ const getServerDataWithBannerColor = async () => {
           id: user?.id,
         },
         include: {
-          BannerColor: {
+          bannerColor: {
             orderBy: {
               createdAt: "asc",
             },

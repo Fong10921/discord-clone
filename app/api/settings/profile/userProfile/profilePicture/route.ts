@@ -39,7 +39,6 @@ export async function PATCH(request: Request, res: NextApiResponse) {
 
 export async function DELETE(request: Request, res: NextApiResponse) {
   try {
-    console.log("trying")
     if (request.method !== "DELETE") {
       return new NextResponse("Method Incorrect");
     }

@@ -14,116 +14,140 @@ import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
-import {
-  BannerColorWithDesensitizedUsers,
-  DesensitizationServer,
-  DesensitizedBannerColor,
-  DesensitizedUserServerDataWithDesensitizedBannerColor,
-} from "@/constants/types/types";
+import { DesensitizedBannerColor, DesensitizedUserServerDataBannerColor } from "@/constants/types/types";
 import EmojiPicker from "@/components/chat/EmojiPicker";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { BannerColor } from "@prisma/client";
+import { User } from "@prisma/client";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import axios from "axios";
-import {
-  useState,
-  useEffect,
-  Dispatch,
-  SetStateAction,
-  useCallback,
-} from "react";
+import { useState, useEffect, Dispatch, SetStateAction } from "react";
 import { SubmitHandler, useForm } from "react-hook-form";
 import { z } from "zod";
-import { Plus, Pen } from "lucide-react";
+import { Pen, Plus } from "lucide-react";
 import { useModal } from "@/hooks/use-modal-store";
+import useFormDataSameAsDatabase from "@/hooks/use-form-data-same-as-database";
+import { API_URLS } from "@/constants/apiUrls";
 
-const profileSchema = z.object({
-  name: z
+const serverProfileSchema = z.object({
+  serverProfileNickname: z
     .string()
-    .min(1, "Please make sure your profile name is at least 1 character long")
-    .max(
-      33,
-      "Please make sure your profile name does not exceed 33 characters"
-    ),
-  pronouns: z.string().optional(),
-  aboutMe: z
+    .max(33, "Please make sure your profile name does not exceed 33 characters")
+    .optional(),
+  serverProfilePronouns: z.string().optional(),
+  serverProfileAboutMe: z
     .string()
     .max(190, "Please make sure your about me is not over 190 characters")
     .optional(),
 });
 
-type profileFormValues = {
-  serverNickName?: string;
-  serverPronouns?: string;
-  aboutMe?: string;
+type serverFormValue = {
+  serverProfileNickname: string;
+  serverProfilePronouns: string;
+  serverProfileAboutMe: string;
 };
 
-interface UserProfileFormProps {
-  userServerDataWithBannerColor: DesensitizedUserServerDataWithDesensitizedBannerColor;
-  isFetching?: boolean;
-  data?: BannerColorWithDesensitizedUsers | null;
-  currentChoosenServer?: DesensitizationServer | null;
+interface ServerProfileFormProps {
+  selectedServerData: DesensitizedUserServerDataBannerColor;
+  user: User;
+  isFetching: boolean;
   setPreviewStateForServer: Dispatch<
     SetStateAction<{
-      previewNickName: string;
+      previewNickname: string;
       previewPronouns: string;
-      previewImage: string;
-      previewBannerColor: DesensitizedBannerColor[];
+      previewAboutMe: string;
+      previewImage: string | null;
+      previewBannerColor: DesensitizedBannerColor[]
     }>
   >;
 }
 
-const ServerProfileForm: React.FC<UserProfileFormProps> = ({
-  userServerDataWithBannerColor,
+const ServerProfileForm: React.FC<ServerProfileFormProps> = ({
+  selectedServerData,
   isFetching,
-  data,
   setPreviewStateForServer,
+  user,
 }) => {
   const [isVisible, setIsVisible] = useState(false);
   const [remainingAbout, setRemainingAbout] = useState<number>(190);
   const [isLoading, setIsLoading] = useState(false);
-  const queryClient = useQueryClient();
-  const { onOpen: onOpenModal } = useModal();
   const [fetchControl, setFetchControl] = useState<boolean>(false);
 
-  const handleClickOpenBannerColorModal = (firstBannerColor?: string) => {
-    if (firstBannerColor && typeof firstBannerColor === "string") {
+  const queryClient = useQueryClient();
+  const { onOpen: onOpenModal } = useModal();
+
+  const checkForCreatedAtKey = () => {
+    const keyExists = selectedServerData.hasOwnProperty("createdAt");
+    return keyExists;
+  };
+
+  const handleClickOpenBannerColorModal = (firstBannerColor?: DesensitizedBannerColor) => {
+    if (firstBannerColor) {
       onOpenModal("bannerColor", {
-        user: userServerDataWithBannerColor.serverPronouns,
-        utils: firstBannerColor,
+        user: user,
+        utils: {existingBannerColor: firstBannerColor, typeOfBannerColor: "server", selectedServerImage: selectedServerData.serverImage},
+        key: firstBannerColor.colorValue
       });
     } else {
       onOpenModal("bannerColor", {
-        user: userBannerColorData,
+        user: user,
+        utils: {
+          typeOfBannerColor: "server",
+          selectedServerImage: selectedServerData.serverImage
+        },
+        key: selectedServerData.serverProfileImage!
       });
     }
   };
 
-  const form = useForm<profileFormValues>({
-    resolver: zodResolver(profileSchema),
+  const form = useForm<serverFormValue>({
+    resolver: zodResolver(serverProfileSchema),
     defaultValues: {
-      serverNickName: userServerDataWithBannerColor.serverNickname!,
-      serverPronouns: userServerDataWithBannerColor.serverPronouns
-        ? userServerDataWithBannerColor.serverPronouns
+      serverProfileNickname: selectedServerData.serverProfileNickname
+        ? selectedServerData.serverProfileNickname
+        : "",
+      serverProfilePronouns: selectedServerData.serverProfilePronouns
+        ? selectedServerData.serverProfilePronouns
+        : "",
+      serverProfileAboutMe: selectedServerData.serverProfileAboutMe
+        ? selectedServerData.serverProfileAboutMe
         : "",
     },
   });
 
-  const formDataSameAsDatabase = useCallback(() => {
-    const currentValues = form.getValues() as profileFormValues;
-    return (Object.keys(currentValues) as Array<keyof profileFormValues>).every(
-      (key) => currentValues[key] === userServerDataWithBannerColor[key]
-    );
-  }, [userServerDataWithBannerColor, form.getValues, isFetching]);
+  const currentValues = form.getValues() as serverFormValue;
+  const formDataSameAsDatabase = useFormDataSameAsDatabase(
+    currentValues,
+    selectedServerData,
+    isFetching
+  );
 
   const {
     formState: { isDirty },
   } = form;
 
-  const updatePatchProfile = async (values: profileFormValues) => {
+  const createServerProfile = async (values: serverFormValue) => {
     let response;
+    const newValue = {
+      ...values,
+      currentServerImageUseAsId: selectedServerData.serverImage,
+    };
     try {
-      response = await axios.patch("/api/settings/profile", values);
+      response = await axios.post(API_URLS.SERVER_PROFILE, newValue);
+    } catch (error) {
+      console.log(error);
+    } finally {
+      reset();
+    }
+  };
+
+  const updateServerProfile = async (values: serverFormValue) => {
+    let response;
+    const newValue = {
+      ...values,
+      currentServerImageUseAsId: selectedServerData.serverImage,
+    };
+    try {
+      response = await axios.patch(API_URLS.SERVER_PROFILE, newValue);
     } catch (error) {
       console.log(error);
     } finally {
@@ -132,12 +156,15 @@ const ServerProfileForm: React.FC<UserProfileFormProps> = ({
   };
 
   const updateMutation = useMutation({
-    mutationFn: updatePatchProfile,
-    onSuccess: () => queryClient.invalidateQueries(["userBannerColor"]),
+    mutationFn: checkForCreatedAtKey()
+      ? updateServerProfile
+      : createServerProfile,
+    onSuccess: () =>
+      queryClient.invalidateQueries(["userServerDataBannerColor"]),
   });
 
-  const onSubmit: SubmitHandler<profileFormValues> = (data) => {
-    if (formDataSameAsDatabase()) {
+  const onSubmit: SubmitHandler<serverFormValue> = (data) => {
+    if (formDataSameAsDatabase() === true) {
       form.reset();
       return;
     }
@@ -154,24 +181,18 @@ const ServerProfileForm: React.FC<UserProfileFormProps> = ({
   };
 
   const resetPreview = () => {
-    if (data !== undefined && data !== null) {
-      handleInputChange(
-        "previewNickName",
-        userServerDataWithBannerColor.serverNickname!
-      );
-      handleInputChange(
-        "previewPronouns",
-        userServerDataWithBannerColor.serverPronouns!
-      );
-      handleInputChange(
-        "previewImage",
-        userServerDataWithBannerColor.serverImage!
-      );
-/*       handleInputChange(
-        "previewBannerColor",
-        userServerDataWithBannerColor.BannerColor!
-      ); */
-    }
+    handleInputChange(
+      "previewNickname",
+      selectedServerData.serverProfileNickname!
+    );
+    handleInputChange(
+      "previewPronouns",
+      selectedServerData.serverProfilePronouns!
+    );
+    handleInputChange(
+      "previewAboutMe",
+      selectedServerData.serverProfileAboutMe!
+    );
   };
 
   const reset = () => {
@@ -193,8 +214,8 @@ const ServerProfileForm: React.FC<UserProfileFormProps> = ({
   }
 
   const handleAboutMeCountWhenReset = () => {
-    if (userServerDataWithBannerColor?.serverAboutMe) {
-      const aboutMeString = userServerDataWithBannerColor?.serverAboutMe as string;
+    if (selectedServerData?.serverProfileAboutMe) {
+      const aboutMeString = selectedServerData?.serverProfileAboutMe as string;
       const correctLength = countStringLength(aboutMeString);
 
       setRemainingAbout(190 - correctLength);
@@ -206,15 +227,15 @@ const ServerProfileForm: React.FC<UserProfileFormProps> = ({
   useEffect(() => {
     if (formDataSameAsDatabase() === true && fetchControl === true) {
       form.reset({
-        serverNickName: userServerDataWithBannerColor?.serverNickname!,
-        serverPronouns: userServerDataWithBannerColor?.serverPronouns || "",
-        aboutMe: userServerDataWithBannerColor?.serverAboutMe || "",
+        serverProfileNickname: selectedServerData?.serverProfileNickname!,
+        serverProfilePronouns: selectedServerData?.serverProfilePronouns || "",
+        serverProfileAboutMe: selectedServerData?.serverProfileAboutMe || "",
       });
     }
     resetPreview();
     handleAboutMeCountWhenReset();
     setFetchControl(false);
-  }, [userServerDataWithBannerColor, form]);
+  }, [selectedServerData, form]);
 
   useEffect(() => {
     if (isDirty) {
@@ -231,7 +252,7 @@ const ServerProfileForm: React.FC<UserProfileFormProps> = ({
           <div className="space-y-6">
             <FormField
               control={form.control}
-              name="serverNickName"
+              name="serverProfileNickname"
               render={({ field }) => (
                 <FormItem>
                   <FormControl>
@@ -240,12 +261,11 @@ const ServerProfileForm: React.FC<UserProfileFormProps> = ({
                       disabled={isLoading}
                       placeholder="Name"
                       maxLength={33}
-                      defaultValue={userServerDataWithBannerColor.serverNickname!}
-                      onChange={(value) => {
-                        field.onChange(value);
+                      onChange={(event) => {
+                        field.onChange(event);
                         handleInputChange(
-                          "previewName",
-                          value.currentTarget.value!
+                          "previewNickname",
+                          event.currentTarget.value
                         );
                       }}
                       className="rounded-none focus:ring-offset-0 focus-visible:ring-0 focus-visible:ring-offset-[0px] w-[90%]"
@@ -258,7 +278,7 @@ const ServerProfileForm: React.FC<UserProfileFormProps> = ({
             <Separator className="space-y-12 my-12 bg-[#4E5058] w-[90%]" />
             <FormField
               control={form.control}
-              name="serverPronouns"
+              name="serverProfilePronouns"
               render={({ field }) => (
                 <FormItem>
                   <FormLabel className="small-text-1232asd text-xs">
@@ -270,7 +290,6 @@ const ServerProfileForm: React.FC<UserProfileFormProps> = ({
                       disabled={isLoading}
                       placeholder="Add your pronouns"
                       maxLength={33}
-                      defaultValue={userServerDataWithBannerColor.serverPronouns!}
                       onChange={(value) => {
                         field.onChange(value);
                         handleInputChange(
@@ -288,7 +307,7 @@ const ServerProfileForm: React.FC<UserProfileFormProps> = ({
             <Separator className="space-y-12 my-12 bg-[#4E5058] w-[90%]" />
             <FormField
               control={form.control}
-              name="aboutMe"
+              name="serverProfileAboutMe"
               render={({ field }) => (
                 <FormItem>
                   <FormLabel className="small-text-1232asd text-xs">
@@ -297,13 +316,13 @@ const ServerProfileForm: React.FC<UserProfileFormProps> = ({
                   <FormControl>
                     <div className="relative p-0 w-[90%] ">
                       <Textarea
-                        disabled={isLoading}
                         {...field}
+                        disabled={isLoading}
                         rows={4}
                         maxLength={190}
-                        defaultValue={userServerDataWithBannerColor.serverAboutMe!}
+                        placeholder="About Me"
                         onChange={(e) => {
-                          const currentValue = field.value!;
+                          const currentValue = field.value;
                           const newValue = e.target.value;
                           handleInputChange(
                             "previewAboutMe",
@@ -360,8 +379,7 @@ const ServerProfileForm: React.FC<UserProfileFormProps> = ({
                       className="h-8 bg-transparent hover:underline text-white hover:bg-transparent"
                       onClick={() => {
                         form.reset();
-                        if (userServerDataWithBannerColor?.serverAboutMe) {
-                          //Spread it so emoji unicode code count correctly
+                        if (selectedServerData?.serverProfileAboutMe) {
                           handleAboutMeCountWhenReset();
                         } else {
                           setRemainingAbout(190);
@@ -393,7 +411,10 @@ const ServerProfileForm: React.FC<UserProfileFormProps> = ({
         disabled={isLoading}
         onClick={() =>
           onOpenModal("changeProfilePicture", {
-            utils: userServerDataWithBannerColor.serverImage!,
+            utils: {
+              profileImage: selectedServerData.serverImage,
+              typeOfProfilePic: "server",
+            },
           })
         }
       >
@@ -416,35 +437,36 @@ const ServerProfileForm: React.FC<UserProfileFormProps> = ({
           />
         </div>
         <div className="grid grid-cols-3 w-[90%]">
-          {userServerDataWithBannerColor.BannerColor.map(
-            (bannerColor: DesensitizedBannerColor, index: number) => {
-              return (
-                <div
-                  key={index}
-                  style={{
-                    backgroundColor: bannerColor.colorValue,
-                    transform: bannerColor.isActive ? "scale(1.1)" : "scale(1)",
-                  }}
-                  className={cn(
-                    `w-20 h-14 cursor-pointer relative rounded-md box-content z-1`,
-                    { "mt-5": index >= 3 }
-                  )}
-                >
-                  <Pen
-                    className="cursor-pointer absolute top-0 right-0 mt-1 mr-1"
-                    size={13}
-                    onClick={() => {
-                      if (isLoading === false) {
-                        handleClickOpenBannerColorModal(bannerColor.colorValue);
-                      } else {
-                        return;
-                      }
+          {selectedServerData.bannerColor
+            ? selectedServerData.bannerColor.map((bannerColor, index) => {
+                return (
+                  <div
+                    key={index}
+                    style={{
+                      backgroundColor: bannerColor.colorValue,
+                      transform: bannerColor.isActive
+                        ? "scale(1.1)"
+                        : "scale(1)",
                     }}
-                  />
-                </div>
-              );
-            }
-          )}
+                    className={`w-20 h-14 cursor-pointer relative rounded-md box-content z-1 ${
+                      index >= 3 ? "mt-5" : ""
+                    }`}
+                  >
+                    <Pen
+                      className="cursor-pointer absolute top-0 right-0 mt-1 mr-1"
+                      size={13}
+                      onClick={() => {
+                        if (!isLoading) {
+                          handleClickOpenBannerColorModal(
+                            bannerColor
+                          );
+                        }
+                      }}
+                    />
+                  </div>
+                );
+              })
+            : null}
         </div>
       </div>
     </>

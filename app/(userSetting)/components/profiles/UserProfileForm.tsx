@@ -15,7 +15,7 @@ import { Separator } from "@/components/ui/separator";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
 import {
-  BannerColorWithDesensitizedUsers,
+  DesensitizedBannerColor,
   UsersWithBannerColor,
 } from "@/constants/types/types";
 import EmojiPicker from "@/components/chat/EmojiPicker";
@@ -23,17 +23,13 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { BannerColor } from "@prisma/client";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import axios from "axios";
-import {
-  useState,
-  useEffect,
-  Dispatch,
-  SetStateAction,
-  useCallback,
-} from "react";
+import { useState, useEffect, Dispatch, SetStateAction } from "react";
 import { SubmitHandler, useForm } from "react-hook-form";
 import { z } from "zod";
 import { Plus, Pen } from "lucide-react";
 import { useModal } from "@/hooks/use-modal-store";
+import useFormDataSameAsDatabase from "@/hooks/use-form-data-same-as-database";
+import { API_URLS } from "@/constants/apiUrls";
 
 const profileSchema = z.object({
   name: z
@@ -57,23 +53,20 @@ type profileFormValues = {
 };
 
 interface UserProfileFormProps {
-  userBannerColorData: UsersWithBannerColor;
+  userProfile: UsersWithBannerColor;
   isFetching: boolean;
-  data: BannerColorWithDesensitizedUsers | null;
   setPreviewState: Dispatch<
     SetStateAction<{
       previewName: string;
       previewPronouns: string;
       previewAboutMe: string;
-      previewUserName: string;
     }>
   >;
 }
 
 const UserProfileForm: React.FC<UserProfileFormProps> = ({
-  userBannerColorData,
+  userProfile,
   isFetching,
-  data,
   setPreviewState,
 }) => {
   const [isVisible, setIsVisible] = useState(false);
@@ -83,15 +76,23 @@ const UserProfileForm: React.FC<UserProfileFormProps> = ({
   const { onOpen: onOpenModal } = useModal();
   const [fetchControl, setFetchControl] = useState<boolean>(false);
 
-  const handleClickOpenBannerColorModal = (firstBannerColor?: string) => {
-    if (firstBannerColor && typeof firstBannerColor === "string") {
+  const handleClickOpenBannerColorModal = (
+    firstBannerColor?: DesensitizedBannerColor
+  ) => {
+    if (firstBannerColor) {
       onOpenModal("bannerColor", {
-        user: userBannerColorData,
-        utils: firstBannerColor,
+        user: userProfile,
+        utils: {
+          existingBannerColor: firstBannerColor,
+          typeOfBannerColor: "user",
+        },
       });
     } else {
       onOpenModal("bannerColor", {
-        user: userBannerColorData,
+        user: userProfile,
+        utils: {
+          typeOfBannerColor: "user",
+        },
       });
     }
   };
@@ -99,20 +100,18 @@ const UserProfileForm: React.FC<UserProfileFormProps> = ({
   const form = useForm<profileFormValues>({
     resolver: zodResolver(profileSchema),
     defaultValues: {
-      name: userBannerColorData.name!,
-      pronouns: userBannerColorData.pronouns
-        ? userBannerColorData.pronouns
-        : "",
-      aboutMe: userBannerColorData.aboutMe ? userBannerColorData.aboutMe : "",
+      name: userProfile.name!,
+      pronouns: userProfile.pronouns ? userProfile.pronouns : "",
+      aboutMe: userProfile.aboutMe ? userProfile.aboutMe : "",
     },
   });
 
-  const formDataSameAsDatabase = useCallback(() => {
-    const currentValues = form.getValues() as profileFormValues;
-    return (Object.keys(currentValues) as Array<keyof profileFormValues>).every(
-      (key) => currentValues[key] === userBannerColorData[key]
-    );
-  }, [userBannerColorData, form.getValues, isFetching]);
+  const currentValues = form.getValues() as profileFormValues;
+  const formDataSameAsDatabase = useFormDataSameAsDatabase(
+    currentValues,
+    userProfile,
+    isFetching
+  );
 
   const {
     formState: { isDirty },
@@ -121,7 +120,7 @@ const UserProfileForm: React.FC<UserProfileFormProps> = ({
   const updatePatchProfile = async (values: profileFormValues) => {
     let response;
     try {
-      response = await axios.patch("/api/settings/profile", values);
+      response = await axios.patch(API_URLS.USER_PROFILE, values);
     } catch (error) {
       console.log(error);
     } finally {
@@ -152,12 +151,9 @@ const UserProfileForm: React.FC<UserProfileFormProps> = ({
   };
 
   const resetPreview = () => {
-    if (data !== undefined && data !== null) {
-      handleInputChange("previewName", userBannerColorData.name!);
-      handleInputChange("previewPronouns", userBannerColorData.pronouns!);
-      handleInputChange("previewUserName", userBannerColorData.userName!);
-      handleInputChange("previewAboutMe", userBannerColorData.aboutMe!);
-    }
+    handleInputChange("previewName", userProfile.name!);
+    handleInputChange("previewPronouns", userProfile.pronouns!);
+    handleInputChange("previewAboutMe", userProfile.aboutMe!);
   };
 
   const reset = () => {
@@ -179,8 +175,8 @@ const UserProfileForm: React.FC<UserProfileFormProps> = ({
   }
 
   const handleAboutMeCountWhenReset = () => {
-    if (userBannerColorData?.aboutMe) {
-      const aboutMeString = userBannerColorData.aboutMe as string;
+    if (userProfile?.aboutMe) {
+      const aboutMeString = userProfile.aboutMe as string;
       const correctLength = countStringLength(aboutMeString);
 
       setRemainingAbout(190 - correctLength);
@@ -192,15 +188,15 @@ const UserProfileForm: React.FC<UserProfileFormProps> = ({
   useEffect(() => {
     if (formDataSameAsDatabase() === true && fetchControl === true) {
       form.reset({
-        name: userBannerColorData.name!,
-        pronouns: userBannerColorData.pronouns || "",
-        aboutMe: userBannerColorData.aboutMe || "",
+        name: userProfile.name!,
+        pronouns: userProfile.pronouns || "",
+        aboutMe: userProfile.aboutMe || "",
       });
     }
     resetPreview();
     handleAboutMeCountWhenReset();
     setFetchControl(false);
-  }, [userBannerColorData, form]);
+  }, [userProfile, form]);
 
   useEffect(() => {
     if (isDirty) {
@@ -226,7 +222,6 @@ const UserProfileForm: React.FC<UserProfileFormProps> = ({
                       disabled={isLoading}
                       placeholder="Name"
                       maxLength={33}
-                      defaultValue={userBannerColorData.name!}
                       onChange={(value) => {
                         field.onChange(value);
                         handleInputChange(
@@ -256,7 +251,6 @@ const UserProfileForm: React.FC<UserProfileFormProps> = ({
                       disabled={isLoading}
                       placeholder="Add your pronouns"
                       maxLength={33}
-                      defaultValue={userBannerColorData.pronouns!}
                       onChange={(value) => {
                         field.onChange(value);
                         handleInputChange(
@@ -283,11 +277,11 @@ const UserProfileForm: React.FC<UserProfileFormProps> = ({
                   <FormControl>
                     <div className="relative p-0 w-[90%] ">
                       <Textarea
-                        disabled={isLoading}
                         {...field}
+                        placeholder="About Me"
+                        disabled={isLoading}
                         rows={4}
                         maxLength={190}
-                        defaultValue={userBannerColorData.aboutMe!}
                         onChange={(e) => {
                           const currentValue = field.value!;
                           const newValue = e.target.value;
@@ -346,7 +340,7 @@ const UserProfileForm: React.FC<UserProfileFormProps> = ({
                       className="h-8 bg-transparent hover:underline text-white hover:bg-transparent"
                       onClick={() => {
                         form.reset();
-                        if (userBannerColorData?.aboutMe) {
+                        if (userProfile?.aboutMe) {
                           //Spread it so emoji unicode code count correctly
                           handleAboutMeCountWhenReset();
                         } else {
@@ -379,7 +373,10 @@ const UserProfileForm: React.FC<UserProfileFormProps> = ({
         disabled={isLoading}
         onClick={() =>
           onOpenModal("changeProfilePicture", {
-            utils: userBannerColorData.image,
+            utils: {
+              profileImage: userProfile.image,
+              typeOfProfilePic: "user",
+            },
           })
         }
       >
@@ -402,7 +399,7 @@ const UserProfileForm: React.FC<UserProfileFormProps> = ({
           />
         </div>
         <div className="grid grid-cols-3 w-[90%]">
-          {userBannerColorData.bannerColor.map(
+          {userProfile.bannerColor.map(
             (bannerColor: BannerColor, index: number) => {
               return (
                 <div
@@ -421,7 +418,7 @@ const UserProfileForm: React.FC<UserProfileFormProps> = ({
                     size={13}
                     onClick={() => {
                       if (isLoading === false) {
-                        handleClickOpenBannerColorModal(bannerColor.colorValue);
+                        handleClickOpenBannerColorModal(bannerColor);
                       } else {
                         return;
                       }

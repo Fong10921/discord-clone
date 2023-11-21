@@ -17,19 +17,20 @@ import LeaveServerModal from "@/components/models/LeaveServerModal";
 import MembersModal from "@/components/models/MembersModal";
 import MessageFileModal from "@/components/models/MessageFileModal";
 import PhoneNumberModal from "@/components/models/PhoneNumberModal";
+import { useModal } from "@/hooks/use-modal-store";
 import { useEffect, useState } from "react";
 
 const ModalProvider = () => {
-
   const [isMounted, setIsMounted] = useState(false);
 
   useEffect(() => {
     setIsMounted(true);
-  }, [])
+  }, []);
 
   if (!isMounted) {
     return;
   }
+
 
   return (
     <>

@@ -18,6 +18,7 @@ import axios from "axios";
 import { useModal } from "@/hooks/use-modal-store";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
+import { API_URLS } from "@/constants/apiUrls";
 
 const formSchema = z.object({
   imageUrl: z.string().min(1, {
@@ -29,7 +30,20 @@ const ChangeProfilePicture = () => {
   const { isOpen, onClose, type, data } = useModal();
   const queryClient = useQueryClient();
   const [isLoading, setIsLoading] = useState<boolean>();
+  let apiRoute: string;
+  let invalidateQueries: string;
 
+  if (data?.utils) {
+    apiRoute =
+      data?.utils.typeOfProfilePic === "server"
+        ? API_URLS.SERVER_PROFILE_PICTURE
+        : API_URLS.USER_PROFILE_PICTURE;
+    invalidateQueries =
+      data?.utils.typeOfProfilePic === "server"
+        ? "userServerDataBannerColor"
+        : "userBannerColor";
+  };
+  
   const isModalOpen = isOpen && type === "changeProfilePicture";
 
   const form = useForm({
@@ -43,11 +57,9 @@ const ChangeProfilePicture = () => {
     values: z.infer<typeof formSchema>
   ) => {
     let response;
+    let updatedValue = {...values, ServerImage: data?.utils.profileImage}
     try {
-      response = await axios.patch(
-        "/api/settings/profile/profilePicture",
-        values
-      );
+      response = await axios.patch(apiRoute, updatedValue);
     } catch (error: any) {
     } finally {
       handleClose();
@@ -58,9 +70,9 @@ const ChangeProfilePicture = () => {
   const deleteProfilePicture = async (values: z.infer<typeof formSchema>) => {
     let response;
     try {
-      response = await axios.delete("/api/settings/profile/profilePicture", {data: {values}});
+      response = await axios.delete(apiRoute, { data: { values } });
     } catch (error: any) {
-      console.log(error)
+      console.log(error);
     } finally {
       handleClose();
       return response?.data;
@@ -69,17 +81,17 @@ const ChangeProfilePicture = () => {
 
   const updateMutation = useMutation({
     mutationFn: updatePATCHProfilePicture,
-    onSuccess: () => queryClient.invalidateQueries(["userBannerColor"]),
+    onSuccess: () => queryClient.invalidateQueries([invalidateQueries]),
   });
 
   const deleteMutation = useMutation({
     mutationFn: deleteProfilePicture,
-    onSuccess: () => queryClient.invalidateQueries(["userBannerColor"]),
+    onSuccess: () => queryClient.invalidateQueries([invalidateQueries]),
   });
 
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
-    setIsLoading(true)
-    if (values === data?.utils) {
+    setIsLoading(true);
+    if (values === data?.utils.profileImage) {
       handleClose();
       return;
     }
@@ -87,8 +99,7 @@ const ChangeProfilePicture = () => {
   };
 
   const onDelete = async (values: z.infer<typeof formSchema>) => {
-
-    if (data?.utils === "") {
+    if (data?.utils.profileImage === "") {
       handleClose();
       return;
     }
@@ -99,7 +110,7 @@ const ChangeProfilePicture = () => {
 
   const handleClose = () => {
     form.reset();
-    setIsLoading(false)
+    setIsLoading(false);
     onClose();
   };
 
@@ -154,7 +165,7 @@ const ChangeProfilePicture = () => {
               <Button
                 disabled={isLoading}
                 type="button"
-                onClick={() => onDelete(data?.utils)}
+                onClick={() => onDelete(data?.utils.profileImage)}
                 variant={"destructive"}
                 className="hover:underline text-white hover:opacity-90"
               >

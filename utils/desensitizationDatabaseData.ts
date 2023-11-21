@@ -32,15 +32,11 @@ const sensitiveFieldConfig = {
 type SensitiveFieldsUnion =
   (typeof sensitiveFieldConfig)[keyof typeof sensitiveFieldConfig][number];
 
-const desensitizeDatabaseData = <T extends Record<string, any>>(
+const desensitizeDatabaseData = <T extends Record<string, any> | null>(
   mainModel: keyof typeof sensitiveFieldConfig,
   subModels: Array<keyof typeof sensitiveFieldConfig> = [],
   modelData: T
-): T | null => {
-  if (!modelData) {
-    return null;
-  }
-
+): T => {
   // Accumulate all sensitive fields from the specified models
   const allSensitiveFields: SensitiveFieldsUnion[] = [
     mainModel,

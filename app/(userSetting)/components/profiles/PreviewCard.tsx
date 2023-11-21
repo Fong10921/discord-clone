@@ -7,27 +7,54 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import Image from "next/image";
 import pencilImage from "@/public/images/pencil.png";
+import { cn } from "@/lib/utils";
+import { useEffect, useState } from "react";
+import { DesensitizedUserBannerColor } from "@/constants/types/types";
 
 type previewState = {
-  previewName: string;
-  previewPronouns: string;
-  previewAboutMe: string;
-  previewUserName: string;
+  previewName?: string;
+  previewNickname?: string;
+  previewPronouns?: string;
+  previewAboutMe?: string;
+  previewUserName?: string;
+  previewImage?: string | undefined | null;
+  previewBannerColor?: any;
 };
 
 interface UserProfilePreviewCardProps {
   previewState: previewState;
-  userBannerColorData: any;
+  userProfile: DesensitizedUserBannerColor;
+  type: "server" | "user";
+  userName: string;
 }
 
-const UserProfilePreviewCard: React.FC<UserProfilePreviewCardProps> = ({
+const PreviewCard: React.FC<UserProfilePreviewCardProps> = ({
   previewState,
-  userBannerColorData,
+  userProfile,
+  userName,
+  type,
 }) => {
+  const isEmpty = (value: string | null | undefined | any[]) =>
+  value === null || 
+  value === undefined || 
+  value === "" || 
+  (Array.isArray(value) && value.length === 0);
+
+  const [profileName, setProfileName] = useState<string | null>();
+  const [profilePronouns, setProfilePronouns] = useState<string | null>();
+  const [profileAboutMe, setProfileAboutMe] = useState<string | null>();
+
   const findActiveBannerColor = () => {
-    const activeBannerColor = userBannerColorData.bannerColor.find(
-      (item: { isActive: any }) => item.isActive
-    );
+    let activeBannerColor;
+    if (type === "user" || isEmpty(previewState.previewBannerColor)) {
+      activeBannerColor = userProfile.bannerColor.find(
+        (item: { isActive: boolean }) => item.isActive
+      );
+    } else if (type === "server") {
+      activeBannerColor = previewState.previewBannerColor.find(
+        (item: { isActive: boolean }) => item.isActive
+      );
+    }
 
     if (activeBannerColor === undefined) {
       return null;
@@ -35,6 +62,22 @@ const UserProfilePreviewCard: React.FC<UserProfilePreviewCardProps> = ({
 
     return activeBannerColor;
   };
+
+  useEffect(() => {
+    const name = isEmpty(previewState.previewNickname)
+      ? userProfile.name
+      : previewState.previewName || previewState.previewNickname;
+    const aboutMe = isEmpty(previewState.previewAboutMe)
+      ? userProfile.aboutMe
+      : previewState.previewAboutMe;
+    const pronouns = isEmpty(previewState.previewPronouns)
+      ? userProfile.pronouns
+      : previewState.previewPronouns;
+
+    setProfileName(name);
+    setProfileAboutMe(aboutMe);
+    setProfilePronouns(pronouns);
+  }, [type, userProfile, previewState]);
 
   return (
     <div>
@@ -54,7 +97,11 @@ const UserProfilePreviewCard: React.FC<UserProfilePreviewCardProps> = ({
               width={70}
               height={70}
               showBadge={true}
-              src={userBannerColorData?.image!}
+              src={
+                previewState.previewImage
+                  ? previewState.previewImage
+                  : userProfile?.image!
+              }
             />
           </div>
         </div>
@@ -63,23 +110,23 @@ const UserProfilePreviewCard: React.FC<UserProfilePreviewCardProps> = ({
             <div className="flex flex-col items-center space-y-6">
               <div className="flex flex-col w-full">
                 <div className="text-lg font-bold whitespace-normal break-words max-w-[17rem]">
-                  {previewState.previewName}
+                  {profileName}
                 </div>
                 <div className="text-sm font-[550] whitespace-normal break-words max-w-[17rem]">
-                  {previewState.previewUserName}
+                  {userName}
                 </div>
                 <div className="text-sm font-[550] whitespace-normal break-words max-w-[17rem]">
-                  {previewState.previewPronouns}
+                  {profilePronouns}
                 </div>
                 <div className="space-y-4">
                   <Separator className="my-2" />
-                  {previewState.previewAboutMe && (
+                  {profileAboutMe && (
                     <div>
                       <div className="text-xs leading-1 tracking-wide mb-1 font-bold uppercase">
                         About Me
                       </div>
                       <div className="text-sm font-[550] whitespace-normal break-words max-w-[17rem]">
-                        {previewState.previewAboutMe}
+                        {profileAboutMe}
                       </div>
                     </div>
                   )}
@@ -88,7 +135,12 @@ const UserProfilePreviewCard: React.FC<UserProfilePreviewCardProps> = ({
                       Customozing My Profile
                     </div>
                     <div className="flex flex-row">
-                      <div className="bg-indigo-600 rounded-lg max-w-[4rem] p-1">
+                      <div
+                        className={cn(
+                          `rounded-lg max-w-[4rem] p-1`,
+                          type === "server" ? "bg-[#11806a]" : "bg-indigo-600"
+                        )}
+                      >
                         <Image
                           src={pencilImage}
                           alt="Pencil Image"
@@ -97,7 +149,9 @@ const UserProfilePreviewCard: React.FC<UserProfilePreviewCardProps> = ({
                         />
                       </div>
                       <div className="flex flex-col justify-center ml-3">
-                        <div className="text-sm">User Profile</div>
+                        <div className="text-sm">
+                          {type === "server" ? "Server" : "User"} Profile
+                        </div>
                         <div>
                           <Timer />
                         </div>
@@ -120,4 +174,4 @@ const UserProfilePreviewCard: React.FC<UserProfilePreviewCardProps> = ({
   );
 };
 
-export default UserProfilePreviewCard;
+export default PreviewCard;

@@ -184,19 +184,23 @@ model DirectMessage {
 }
 
 model BannerColor {
-  id         String  @id @default(uuid()) @db.Uuid
-  colorValue String
-  isActive   Boolean @default(false)
+  id             String          @id @default(uuid()) @db.Uuid
+  colorValue     String
+  isActive       Boolean         @default(false)
 
-  userId String @db.Uuid
-  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId         String          @db.Uuid
+  user           User            @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   userServerId   String?         @db.Uuid
   userServerData UserServerData? @relation(fields: [userServerId], references: [id], onDelete: Cascade)
 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+
+  @@unique([userId, colorValue])
+  @@unique([userId, userServerId, colorValue])
 }
+
 
 model UserServerData {
   id String @id @default(uuid()) @db.Uuid
@@ -204,16 +208,17 @@ model UserServerData {
   userId String @db.Uuid
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  serverId String @db.Uuid
-  server   Server @relation(fields: [serverId], references: [id], onDelete: Cascade)
+  serverId    String @db.Uuid
+  serverImage String @unique @db.Text
+  server      Server @relation(fields: [serverId], references: [id], onDelete: Cascade)
 
-  serverImage    String?
-  serverNickname String?
-  serverPronouns String?
-  serverAboutMe  String?
+  serverProfileImage    String?
+  serverProfileNickname String?
+  serverProfilePronouns String?
+  serverProfileAboutMe  String?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  BannerColor BannerColor[]
+  bannerColor BannerColor[]
 }

@@ -1,14 +1,13 @@
 import getCurrentUser from "@/actions/getCurrentUser";
-import MyAccount from "../components/MyAccount";
-import Profile from "../components/Profile";
+import MyAccount from "../components/myAccount/MyAccount";
+import Profile from "../components/profiles/Profile";
 import ESCButton from "../components/EscButton";
 import prismadb from "@/lib/prismadb";
 import desensitizeDatabaseData from "@/utils/desensitizationDatabaseData";
-import getServerDataWithBannerColor from "@/actions/getServerDataWithBannerColor";
+import PrivacyAndSafety from "../components/privacyAndSafety/PrivacyAndSafety";
 
 const SettingPage = async () => {
   const { user } = await getCurrentUser();
-  const userServerDataWithBannerColor = await getServerDataWithBannerColor();
 
   const userWithBannerColor = await prismadb.user.findUnique({
     where: {
@@ -16,6 +15,9 @@ const SettingPage = async () => {
     },
     include: {
       bannerColor: {
+        where: {
+          userServerId: null
+        },
         orderBy: {
           createdAt: "asc",
         },
@@ -35,7 +37,7 @@ const SettingPage = async () => {
     serverList
   );
 
-  const userWithBannerColorDesensitized = desensitizeDatabaseData(
+  const desensitizedUserProfile  = desensitizeDatabaseData(
     "User",
     ["BannerColor"],
     userWithBannerColor!
@@ -46,10 +48,11 @@ const SettingPage = async () => {
       <div>
         <MyAccount user={user!} />
         <Profile
-          data={userWithBannerColorDesensitized}
-          data2={userServerDataWithBannerColor}
-          data3={desensitizatizedServer}
+          initialUserProfile={desensitizedUserProfile}
+          serverList={desensitizatizedServer}
+          currentUser={user!}
         />
+        <PrivacyAndSafety />
       </div>
       <ESCButton />
     </div>

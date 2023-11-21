@@ -25,12 +25,16 @@ export async function GET() {
       },
     });
 
-    const desensitizatizedBannerColor = desensitizeDatabaseData("User", ["BannerColor"], bannerColor!) 
+    const desensitizatizedBannerColor = desensitizeDatabaseData(
+      "User",
+      ["BannerColor"],
+      bannerColor!
+    );
 
     return NextResponse.json(desensitizatizedBannerColor);
   } catch (error) {
     console.log("[GET_CURRENT_USER_WITH_BANNER_COLOR_API FAILED]");
-    console.log(error)
+    console.log(error);
   }
 }
 
@@ -41,7 +45,7 @@ export async function POST(request: Request, res: NextApiResponse) {
 
   try {
     const body = await request.json();
-    const { bannerColor } = body;
+    const { bannerColor, choosenServerImage } = body;
     let { isActive } = body;
 
     const { user } = await getCurrentUser();
@@ -50,11 +54,18 @@ export async function POST(request: Request, res: NextApiResponse) {
       return res.status(401).send("Unauthenticated");
     }
 
+    const findCorrectUserServerData = await prismadb.userServerData.findUnique({
+      where: {
+        serverImage: choosenServerImage,
+      },
+    });
+
     if (isActive === true) {
       const activeBannerColor = await prismadb.bannerColor.findFirst({
         where: {
           userId: user.id,
           isActive: true,
+          userServerId: findCorrectUserServerData?.id,
         },
       });
 
@@ -83,6 +94,12 @@ export async function POST(request: Request, res: NextApiResponse) {
             id: user.id,
           },
         },
+        userServerData: {
+          connect: {
+            serverId: findCorrectUserServerData?.serverId,
+            serverImage: findCorrectUserServerData?.serverImage,
+          },
+        },
       },
     });
 
@@ -102,19 +119,25 @@ export async function PATCH(request: Request, res: NextApiResponse) {
     }
 
     const body = await request.json();
-    const { bannerColor, isActive, colorId } = body;
+    const { bannerColor, isActive, oldColorValue, choosenServerImage } = body;
     const { user } = await getCurrentUser();
-    let activeBoolean;
-
+    
     if (!user) {
       return new NextResponse("Unauthenticated", { status: 401 });
     }
+
+    const findCorrectUserServerData = await prismadb.userServerData.findUnique({
+      where: {
+        serverImage: choosenServerImage,
+      },
+    });
 
     if (isActive === true) {
       const activeBannerColor = await prismadb.bannerColor.findFirst({
         where: {
           userId: user.id,
           isActive: true,
+          userServerId: findCorrectUserServerData?.id,
         },
       });
 
@@ -130,30 +153,35 @@ export async function PATCH(request: Request, res: NextApiResponse) {
       }
     }
 
-    if (isActive === "unchecked") {
-      activeBoolean = false;
-    } else if (isActive === "checked") {
-      activeBoolean = true;
-    }
-
     const bannerColorToBeUpdated = await prismadb.bannerColor.findUnique({
-      where: { id: colorId },
+      where: {
+        userId_userServerId_colorValue: {
+          userId: user?.id,
+          userServerId: findCorrectUserServerData?.id!,
+          colorValue: oldColorValue,
+        },
+      },
     });
+
 
     if (!bannerColorToBeUpdated || bannerColorToBeUpdated.userId !== user.id) {
       return new NextResponse("Forbidden", { status: 403 });
     }
 
     const updatedBannerColor = await prismadb.bannerColor.update({
-      where: { id: colorId },
+      where: {
+        id: bannerColorToBeUpdated.id
+      },
       data: {
-        colorValue: bannerColor.hex,
-        isActive: activeBoolean !== undefined ? activeBoolean : isActive,
+        colorValue: (bannerColor === undefined) ? oldColorValue : bannerColor.hex,
+        isActive:
+          isActive === "unchecked" ? bannerColorToBeUpdated.isActive : isActive,
       },
     });
 
     return NextResponse.json(updatedBannerColor);
   } catch (error) {
+    console.error("Error caught in PATCH:", error); 
     return new NextResponse("Internal Server Error", { status: 500 });
   }
 }
@@ -166,7 +194,7 @@ export async function DELETE(request: Request, res: NextApiResponse) {
 
     const body = await request.json();
 
-    const { id } = body;
+    const { oldColorValue } = body;
 
     const { user } = await getCurrentUser();
 
@@ -176,7 +204,10 @@ export async function DELETE(request: Request, res: NextApiResponse) {
 
     const bannerColor = await prismadb.bannerColor.findUnique({
       where: {
-        id: id,
+        userId_colorValue: {
+          userId: user?.id,
+          colorValue: oldColorValue,
+        },
       },
     });
 
@@ -186,7 +217,7 @@ export async function DELETE(request: Request, res: NextApiResponse) {
 
     await prismadb.bannerColor.delete({
       where: {
-        id: id,
+        id: bannerColor.id,
       },
     });
 

@@ -26,7 +26,8 @@ import { useEffect, useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Sketch } from "@uiw/react-color";
 import { Switch } from "../ui/switch";
-import { UsersWithBannerColor } from "@/constants/types/types";
+import { API_URLS } from "@/constants/apiUrls";
+import { DesensitizedBannerColor } from "@/constants/types/types";
 
 const colorSchema = z.object({
   r: z.number().min(0).max(255),
@@ -49,57 +50,88 @@ const hsvSchema = z.object({
 const alphaSchema = z.number().min(0).max(1);
 
 const formSchema = z.object({
-  bannerColor: z.object({
-    rgb: colorSchema.optional(),
-    hsl: hslSchema.optional(),
-    hsv: hsvSchema.optional(),
-    rgba: colorSchema.extend({ a: alphaSchema }).optional(),
-    hsla: hslSchema.extend({ a: alphaSchema }).optional(),
-    hsva: hsvSchema.extend({ a: alphaSchema }).optional(),
-    hex: z
-      .string()
-      .regex(/^#[0-9a-fA-F]{6}$/)
-      .optional(),
-    hexa: z
-      .string()
-      .regex(/^#[0-9a-fA-F]{8}$/)
-      .optional(),
-  }),
+  bannerColor: z
+    .object({
+      rgb: colorSchema.optional(),
+      hsl: hslSchema.optional(),
+      hsv: hsvSchema.optional(),
+      rgba: colorSchema.extend({ a: alphaSchema }).optional(),
+      hsla: hslSchema.extend({ a: alphaSchema }).optional(),
+      hsva: hsvSchema.extend({ a: alphaSchema }).optional(),
+      hex: z
+        .string()
+        .regex(/^#[0-9a-fA-F]{6}$/)
+        .optional(),
+      hexa: z
+        .string()
+        .regex(/^#[0-9a-fA-F]{8}$/)
+        .optional(),
+    })
+    .optional(),
   isActive: z.union([z.string(), z.boolean()]).optional(),
 });
 
 const BannerColorModal = () => {
   const { isOpen, onClose, type, data } = useModal();
+  const [currentBannerColorData, setCurrentBannerColorData] =
+    useState<DesensitizedBannerColor | null>();
+  const [weirdBanner, setWeirdBanner] = useState<any>();
   const [isLoading, setIsLoading] = useState<boolean>(false);
-
   const isModalOpen = isOpen && type === "bannerColor";
   const queryClient = useQueryClient();
+  let apiRoute: string;
+  let invalidateQueries: string;
 
-  const userBannerColorData: UsersWithBannerColor | undefined =
-    queryClient.getQueryData(["userBannerColor"]);
+  if (data?.utils) {
+    apiRoute =
+      data?.utils.typeOfBannerColor === "server"
+        ? API_URLS.SERVER_PROFILE_BANNER_COLOR
+        : API_URLS.USER_PROFILE_BANNER_COLOR;
 
-  const matchingColorObject = userBannerColorData?.bannerColor.find(
-    (item) => item.colorValue === data.utils
-  );
+    invalidateQueries =
+      data?.utils.typeOfBannerColor === "server"
+        ? "userServerDataBannerColor"
+        : "userBannerColor";
+  }
+
+  useEffect(() => {
+    if (data?.utils?.existingBannerColor) {
+      setCurrentBannerColorData(data.utils.existingBannerColor);
+    } else {
+      setCurrentBannerColorData(null);
+    }
+  }, [data?.utils?.existingBannerColor, isOpen, onClose]);
 
   const [isActive, setIsActive] = useState<boolean>(false);
 
   const form = useForm({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      bannerColor: userBannerColorData,
-      isActive: matchingColorObject?.isActive ? "checked" : "unchecked",
+      bannerColor: currentBannerColorData?.colorValue,
+      isActive: currentBannerColorData?.isActive ? "checked" : "unchecked",
     },
   });
 
-  const updatePATCHBannerColor: any = async (values: z.infer<typeof formSchema>) => {
+  const updatePATCHBannerColor = async (values: z.infer<typeof formSchema>) => {
     let response;
-    const newValue = { ...values, colorId: matchingColorObject?.id };
+    let newValue;
+    if (weirdBanner === values.bannerColor?.hex) {
+      newValue = {
+        ...values,
+        oldColorValue: currentBannerColorData?.colorValue,
+        choosenServerImage: data.utils.selectedServerImage,
+        bannerColor: undefined
+      };
+    } else {
+      newValue = {
+        ...values,
+        oldColorValue: currentBannerColorData?.colorValue,
+        choosenServerImage: data.utils.selectedServerImage,
+      }
+    }
+
     try {
-      response = await axios.patch(
-        "/api/settings/profile/bannerColor",
-        newValue
-      );
+      response = await axios.patch(apiRoute, newValue);
     } catch (error: any) {
     } finally {
       setIsLoading(false);
@@ -110,8 +142,13 @@ const BannerColorModal = () => {
 
   const addPOSTBannerColor = async (values: z.infer<typeof formSchema>) => {
     let response;
+    setWeirdBanner(values?.bannerColor?.hex!);
+    const newValue = {
+      ...values,
+      choosenServerImage: data.utils.selectedServerImage,
+    };
     try {
-      response = await axios.post("/api/settings/profile/bannerColor", values);
+      response = await axios.post(apiRoute, newValue);
     } catch (error: any) {
     } finally {
       setIsLoading(false);
@@ -120,10 +157,15 @@ const BannerColorModal = () => {
     }
   };
 
-  const DeleteBannerColor = async (id: string) => {
+  const deleteBannerColor = async () => {
     let response;
     try {
-      response = await axios.delete("/api/settings/profile/bannerColor", { data: { id } });
+      response = await axios.delete(apiRoute, {
+        data: {
+          oldColorValue: currentBannerColorData?.colorValue,
+          choosenServerImage: data.utils.selectedServerImage,
+        },
+      });
     } catch (error: any) {
     } finally {
       setIsLoading(false);
@@ -133,25 +175,25 @@ const BannerColorModal = () => {
   };
 
   const updateMutation = useMutation({
-    mutationFn: data?.utils ? updatePATCHBannerColor : addPOSTBannerColor,
-    onSuccess: () => queryClient.invalidateQueries(["userBannerColor"]),
+    mutationFn: data?.utils?.existingBannerColor
+      ? updatePATCHBannerColor
+      : addPOSTBannerColor,
+    onSuccess: () => queryClient.invalidateQueries([invalidateQueries]),
   });
 
   const deleteMutation = useMutation({
-    mutationFn: DeleteBannerColor,
-    onSuccess: () => queryClient.invalidateQueries(["userBannerColor"]),
-  })
+    mutationFn: deleteBannerColor,
+    onSuccess: () => queryClient.invalidateQueries([invalidateQueries]),
+  });
 
   const { isSuccess } = updateMutation;
 
   const onSubmit = async (values: any) => {
-    /* The reason we check for empty object because if empty it means the user havent move the picker thus remind same as the default color*/
     setIsLoading(true);
     if (
       Object.keys(values?.bannerColor || {}).length === 0 &&
       (values?.isActive === "checked" || values?.isActive === "unchecked")
     ) {
-      console.log("We are not doing anything");
       handleClose();
       return;
     }
@@ -159,22 +201,30 @@ const BannerColorModal = () => {
     updateMutation.mutate(values);
   };
 
-  const onDelete = async (values: string) => {
+  const onDelete = async () => {
     setIsLoading(true);
-    deleteMutation.mutate(values);
-  }
+    deleteMutation.mutate();
+  };
 
   const handleClose = () => {
-    form.reset();
-    setIsActive(matchingColorObject?.isActive!)
+    // Reset the form to initial values
+    form.reset({
+      bannerColor: undefined,
+      isActive: "unchecked",
+    });
+
+    // Reset local states to their initial values
+    setCurrentBannerColorData(null);
+    setIsActive(false);
+    setIsLoading(false);
+
+    // Close the modal
     onClose();
   };
 
   useEffect(() => {
-    if (matchingColorObject?.isActive !== undefined) {
-      setIsActive(matchingColorObject.isActive);
-    }
-  }, [matchingColorObject]);
+    setIsActive(currentBannerColorData?.isActive!);
+  }, [currentBannerColorData]);
 
   useEffect(() => {
     if (!isLoading || isSuccess) {
@@ -190,7 +240,9 @@ const BannerColorModal = () => {
       >
         <DialogHeader className="pt-8 px-6">
           <DialogTitle className="text-2xl text-center font-bold">
-            {data?.utils ? "Update the Banner Color" : "Choose a Banner Color"}
+            {data?.utils?.existingBannerColor
+              ? "Update the Banner Color"
+              : "Choose a Banner Color"}
           </DialogTitle>
         </DialogHeader>
         <Form {...form}>
@@ -210,7 +262,7 @@ const BannerColorModal = () => {
                         {...field}
                         width={475}
                         onChange={(newShade) => field.onChange(newShade)}
-                        color={data.utils}
+                        color={currentBannerColorData?.colorValue}
                       />
                     </FormControl>
                     <FormMessage className="text-red-600" />
@@ -229,13 +281,11 @@ const BannerColorModal = () => {
                       <FormControl>
                         <Switch
                           className="data-[state=checked]:bg-red-500 data-[state=unchecked]:bg-blue-500 h-6 w-11 mt-24"
-                          {...field}
+                          checked={isActive} // Controlled component
                           onCheckedChange={(value) => {
                             field.onChange(value);
                             setIsActive(!isActive);
                           }}
-                          defaultChecked={matchingColorObject?.isActive}
-                          thumbStyle="h-4"
                           disabled={isLoading}
                         />
                       </FormControl>
@@ -245,8 +295,9 @@ const BannerColorModal = () => {
                 }}
               />
             </div>
+
             <DialogFooter className="px-6 py-4 flex">
-            <Button
+              <Button
                 disabled={isLoading}
                 type="button"
                 onClick={handleClose}
@@ -255,21 +306,24 @@ const BannerColorModal = () => {
               >
                 Cancel
               </Button>
+              {data?.utils?.existingBannerColor && (
+                <Button
+                  disabled={isLoading}
+                  type="button"
+                  onClick={() => onDelete()}
+                  variant={"destructive"}
+                  className="hover:underline text-white hover:opacity-90"
+                >
+                  Delete
+                </Button>
+              )}
               <Button
                 disabled={isLoading}
-                type="button"
-                onClick={() => onDelete(data?.utils)}
-                variant={"destructive"}
-                className="hover:underline text-white hover:opacity-90"
-              >
-                Delete
-              </Button>
-              <Button
-                disabled={isLoading}
+                type="submit"
                 variant="primary"
                 className="hover:underline text-white hover:opacity-90"
               >
-                {data?.utils ? "Update" : "Create"}
+                {data?.utils?.existingBannerColor ? "Update" : "Create"}
               </Button>
             </DialogFooter>
           </form>
