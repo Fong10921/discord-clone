@@ -14,19 +14,23 @@ import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
-import { DesensitizedBannerColor, DesensitizedUserServerDataBannerColor } from "@/constants/types/types";
+import {
+  DesensitizedBannerColor,
+  DesensitizedUserServerDataBannerColor,
+} from "@/constants/types/types";
 import EmojiPicker from "@/components/chat/EmojiPicker";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { User } from "@prisma/client";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import axios from "axios";
-import { useState, useEffect, Dispatch, SetStateAction } from "react";
+import { useState, useEffect, Dispatch, SetStateAction, useRef } from "react";
 import { SubmitHandler, useForm } from "react-hook-form";
 import { z } from "zod";
 import { Pen, Plus } from "lucide-react";
 import { useModal } from "@/hooks/use-modal-store";
 import useFormDataSameAsDatabase from "@/hooks/use-form-data-same-as-database";
 import { API_URLS } from "@/constants/apiUrls";
+import { StaticImageData } from "next/image";
 
 const serverProfileSchema = z.object({
   serverProfileNickname: z
@@ -55,8 +59,8 @@ interface ServerProfileFormProps {
       previewNickname: string;
       previewPronouns: string;
       previewAboutMe: string;
-      previewImage: string | null;
-      previewBannerColor: DesensitizedBannerColor[]
+      previewImage: string | StaticImageData;
+      previewBannerColor: DesensitizedBannerColor[];
     }>
   >;
 }
@@ -72,6 +76,8 @@ const ServerProfileForm: React.FC<ServerProfileFormProps> = ({
   const [isLoading, setIsLoading] = useState(false);
   const [fetchControl, setFetchControl] = useState<boolean>(false);
 
+  const rollbackValue = useRef<DesensitizedUserServerDataBannerColor>(selectedServerData);
+
   const queryClient = useQueryClient();
   const { onOpen: onOpenModal } = useModal();
 
@@ -80,21 +86,27 @@ const ServerProfileForm: React.FC<ServerProfileFormProps> = ({
     return keyExists;
   };
 
-  const handleClickOpenBannerColorModal = (firstBannerColor?: DesensitizedBannerColor) => {
+  const handleClickOpenBannerColorModal = (
+    firstBannerColor?: DesensitizedBannerColor
+  ) => {
     if (firstBannerColor) {
       onOpenModal("bannerColor", {
         user: user,
-        utils: {existingBannerColor: firstBannerColor, typeOfBannerColor: "server", selectedServerImage: selectedServerData.serverImage},
-        key: firstBannerColor.colorValue
+        utils: {
+          existingBannerColor: firstBannerColor,
+          typeOfBannerColor: "server",
+          selectedServerImage: selectedServerData.serverImage,
+        },
+        key: firstBannerColor.colorValue,
       });
     } else {
       onOpenModal("bannerColor", {
         user: user,
         utils: {
           typeOfBannerColor: "server",
-          selectedServerImage: selectedServerData.serverImage
+          selectedServerImage: selectedServerData.serverImage,
         },
-        key: selectedServerData.serverProfileImage!
+        key: selectedServerData.serverProfileImage!,
       });
     }
   };
@@ -160,8 +172,18 @@ const ServerProfileForm: React.FC<ServerProfileFormProps> = ({
       ? updateServerProfile
       : createServerProfile,
     onSuccess: () =>
-      queryClient.invalidateQueries(["userServerDataBannerColor"]),
+      queryClient.invalidateQueries({
+        queryKey: ["userServerDataBannerColor"],
+      }),
+    onMutate: async (variables: serverFormValue) => {
+      await queryClient.cancelQueries({queryKey: ["userServerDataBannerColor"]});
+      const previousValue = rollbackValue.current;
+      rollbackValue.current = selectedServerData,
+      queryClient.setQueryData(["userServerDataBannerColor"], rollbackValue.current);
+      return {previousValue};
+    },
   });
+  
 
   const onSubmit: SubmitHandler<serverFormValue> = (data) => {
     if (formDataSameAsDatabase() === true) {
@@ -457,9 +479,7 @@ const ServerProfileForm: React.FC<ServerProfileFormProps> = ({
                       size={13}
                       onClick={() => {
                         if (!isLoading) {
-                          handleClickOpenBannerColorModal(
-                            bannerColor
-                          );
+                          handleClickOpenBannerColorModal(bannerColor);
                         }
                       }}
                     />

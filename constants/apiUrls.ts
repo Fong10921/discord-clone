@@ -8,4 +8,8 @@ export const API_URLS = {
   SERVER_PROFILE: "api/settings/profile/serverProfile",
   SERVER_PROFILE_PICTURE: "api/settings/profile/serverProfile/profilePicture",
   SERVER_PROFILE_BANNER_COLOR: "api/settings/profile/serverProfile/bannerColor",
+
+  SERVER_DATA: "api/settings/profile/serverData",
+
+  PRIVACY_SAFETY: "api/settings/profile/privacySafety"
 };

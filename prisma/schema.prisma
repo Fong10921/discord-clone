@@ -26,6 +26,7 @@ model User {
   createdAt      DateTime  @default(now())
   updatedAt      DateTime  @updatedAt
 
+  UserDetails    UserDetails?
   accounts       Account[]
   servers        Server[]
   members        Member[]
@@ -51,6 +52,33 @@ model Account {
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([provider, providerAccountId])
+}
+
+enum Filter {
+  ALL
+  NON_FRIENDS
+  NO_FILTER
+}
+
+model UserDetails {
+  id String @id @default(uuid()) @db.Uuid
+
+  userId String @unique @db.Uuid
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  explicitImageFilter Filter @default(NON_FRIENDS)
+  dmSpamFilter        Filter @default(NON_FRIENDS)
+
+  directMessageFromServerMembers                      Boolean @default(true)
+  accessToAgeRestrictedServerIOS                      Boolean @default(false)
+  messageRequestFromUnknownServer                     Boolean @default(true)
+  accessToAgeRestrictedCommandFromAppsInDirectMessage Boolean @default(false)
+  allowUseDataImproveDiscord                          Boolean @default(false)
+  allowUseDataCustomizeDiscord                        Boolean @default(true)
+  InGameRewards                                       Boolean @default(true)
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model Server {
@@ -184,23 +212,22 @@ model DirectMessage {
 }
 
 model BannerColor {
-  id             String          @id @default(uuid()) @db.Uuid
-  colorValue     String
-  isActive       Boolean         @default(false)
+  id         String  @id @default(uuid()) @db.Uuid
+  colorValue String
+  isActive   Boolean @default(false)
 
-  userId         String          @db.Uuid
-  user           User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId String @db.Uuid
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   userServerId   String?         @db.Uuid
   userServerData UserServerData? @relation(fields: [userServerId], references: [id], onDelete: Cascade)
 
-  createdAt      DateTime        @default(now())
-  updatedAt      DateTime        @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@unique([userId, colorValue])
   @@unique([userId, userServerId, colorValue])
 }
-
 
 model UserServerData {
   id String @id @default(uuid()) @db.Uuid

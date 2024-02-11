@@ -17,7 +17,9 @@ const MyAccount: React.FC<MyAccountProps> = ({ user }) => {
   const { openType } = useSettingPageModal();
   const { onOpen: onOpenModal } = useModal();
 
-  const { data } = useQuery(["currentUser"], getCurrentUserData, {
+  const { data } = useQuery({
+    queryKey: ["currentUser"],
+    queryFn: getCurrentUserData,
     initialData: user,
   });
 

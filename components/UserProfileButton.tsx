@@ -2,13 +2,13 @@
 
 import { cn } from "@/lib/utils";
 import { User } from "@prisma/client";
-import Image from "next/image";
+import Image, { StaticImageData } from "next/image";
 import placeholderImage from "@/public/images/placeholder.png";
 import useUserAvailabilityStatus from "@/hooks/use-visibility";
 
 interface UserProfileButtonProps {
   user?: User
-  src?: string;
+  src?: string | StaticImageData;
   onClick?: () => void;
   className?: string;
   showBadge?: boolean;

@@ -120,14 +120,14 @@ const BannerColorModal = () => {
         ...values,
         oldColorValue: currentBannerColorData?.colorValue,
         choosenServerImage: data.utils.selectedServerImage,
-        bannerColor: undefined
+        bannerColor: undefined,
       };
     } else {
       newValue = {
         ...values,
         oldColorValue: currentBannerColorData?.colorValue,
         choosenServerImage: data.utils.selectedServerImage,
-      }
+      };
     }
 
     try {
@@ -178,12 +178,14 @@ const BannerColorModal = () => {
     mutationFn: data?.utils?.existingBannerColor
       ? updatePATCHBannerColor
       : addPOSTBannerColor,
-    onSuccess: () => queryClient.invalidateQueries([invalidateQueries]),
+    onSuccess: () =>
+      queryClient.invalidateQueries({ queryKey: [invalidateQueries] }),
   });
 
   const deleteMutation = useMutation({
     mutationFn: deleteBannerColor,
-    onSuccess: () => queryClient.invalidateQueries([invalidateQueries]),
+    onSuccess: () =>
+      queryClient.invalidateQueries({ queryKey: [invalidateQueries] }),
   });
 
   const { isSuccess } = updateMutation;

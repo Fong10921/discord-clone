@@ -65,7 +65,10 @@ const EmailModal = () => {
     },
   });
 
-  const { setError, formState: { errors, isLoading, isSubmitSuccessful } } = form;
+  const {
+    setError,
+    formState: { errors, isLoading, isSubmitSuccessful },
+  } = form;
 
   const updatePATCHEmail = async (values: z.infer<typeof formSchema>) => {
     let response;
@@ -106,7 +109,7 @@ const EmailModal = () => {
 
   const updateMutation = useMutation({
     mutationFn: data.user?.email ? updatePATCHEmail : addPOSTEmail,
-    onSuccess: () => queryClient.invalidateQueries(["currentUser"]),
+    onSuccess: () => queryClient.invalidateQueries({queryKey: ["currentUser"]}),
   });
 
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
@@ -134,7 +137,10 @@ const EmailModal = () => {
 
   return (
     <Dialog open={isModalOpen} onOpenChange={handleClose}>
-      <DialogContent className="bg-[#313338] text-white p-0 overflow-hidden">
+      <DialogContent
+        className="bg-[#313338] text-white p-0 overflow-hidden"
+        onOpenAutoFocus={(event) => event.preventDefault()}
+      >
         <DialogHeader className="pt-8 px-6">
           <DialogTitle className="text-2xl text-center font-bold">
             {data?.user?.email ? "Edit your email" : "Enter a new email"}
@@ -159,9 +165,11 @@ const EmailModal = () => {
                       </FormLabel>
                       <FormControl>
                         <Input
+                          autoFocus
                           {...field}
                           onChange={(value) => field.onChange(value)}
                           disabled={isLoading}
+                          className="bg-black border-0 focus-visible:ring-0 text-white focus-visible:ring-offset-0"
                         />
                       </FormControl>
                       <FormMessage className="text-red-600" />
@@ -183,6 +191,7 @@ const EmailModal = () => {
                           {...field}
                           onChange={(value) => field.onChange(value)}
                           disabled={isLoading}
+                          className="bg-black border-0 focus-visible:ring-0 text-white focus-visible:ring-offset-0"
                         />
                       </FormControl>
                       <FormMessage className="text-red-600" />

@@ -15,7 +15,7 @@ export async function fetchUserWithBannerColor() {
 
 export async function getCurrentUserData() {
   try {
-    const response = await axios.get("/api/users");
+    const response = await axios.get(API_URLS.GET_CURRENT_USER_DATA);
 
     return response.data;
   } catch (error) {
@@ -33,10 +33,24 @@ export async function fetchUserServerDataWithBannerColor(
   try {
     const response = await axios({
       method: "get",
-      url: "api/settings/profile/serverData",
+      url: API_URLS.SERVER_DATA,
       params: {
         choosenServerImage,
       },
+    });
+    return response.data;
+  } catch (error) {
+    console.log(error);
+  }
+}
+
+export async function fetchUserPrivacySafetySetting(
+) {
+
+  try {
+    const response = await axios({
+      method: "get",
+      url: API_URLS.PRIVACY_SAFETY,
     });
     return response.data;
   } catch (error) {

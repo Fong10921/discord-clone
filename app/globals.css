@@ -90,15 +90,13 @@ body,
   visibility: hidden;
   opacity: 0;
   bottom: -40%;
-  /* Shorten the transition durations; remove delay on the 'visibility' property. */
   transition: visibility 0s, opacity 0.5s linear, bottom 0.5s cubic-bezier(0.68, -0.55, 0.27, 1.55);
 }
 
 .alert-visible {
   visibility: visible;
   opacity: 1;
-  bottom: -29%; /* Assuming the alert should be within the view; adjust if it needs to be otherwise. */
-  /* Shorten the transition durations here too for consistency. */
+  bottom: -29%;
   transition: visibility 0s, opacity 0.5s linear, bottom 0.5s cubic-bezier(0.68, -0.55, 0.27, 1.55);
 }
 
@@ -180,33 +178,28 @@ body,
   animation: stroke 0.3s cubic-bezier(0.65, 0, 0.45, 1) 0.8s forwards;
 }
 
-#loader-wrapper {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100vw;        
-  height: 100vh;       
-  z-index: 1001;       
+.loaderContainer {
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
-#loader {
-  position: absolute;
-  left: 50%;
-  top: 50%;
-  width: 50px;         /* Constant size, adjust as necessary */
-  height: 50px;        /* Constant size, adjust as necessary */
-  margin: -25px 0 0 -25px; /* Half of width and height */ 
+.loader {
+  border: 3px solid #f3f3f3;
   border-radius: 50%;
-  border: 4px solid transparent;
-  border-top-color: #000000;  /* CHANGED TO BLACK */
-  animation: spin 1s linear infinite;
+  width: 2rem;
+  height: 2rem;
+  animation: spin 2s linear infinite;
+}
+
+.loaderdark {
+  border-top-color: #191a1d;
 }
 
 @keyframes spin {
-  0%   {transform: rotate(0deg);}
-  100% {transform: rotate(360deg);}
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
 }
-
 
 @keyframes stroke {
   100% {
@@ -228,7 +221,6 @@ body,
 }
 
 @media (max-width: 767px) {
-  /* 768px is the default starting size for 'md' in Tailwind */
   .hidden-below-md {
     display: none !important;
   }

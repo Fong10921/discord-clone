@@ -73,11 +73,13 @@ const EditUsernameModal = () => {
 
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
     try {
-      
-      const response = await axios.patch("/api/settings/myAccount/editUsername", {
-        ...values,
-        type: "PATCH: updateUsername"
-      });
+      const response = await axios.patch(
+        "/api/settings/myAccount/editUsername",
+        {
+          ...values,
+          type: "PATCH: updateUsername",
+        }
+      );
 
       if (response.data.error) {
         console.log(response);
@@ -100,7 +102,10 @@ const EditUsernameModal = () => {
 
   return (
     <Dialog open={isModalOpen} onOpenChange={handleClose}>
-      <DialogContent className="bg-[#313338] text=white p-0 overflow-hidden">
+      <DialogContent
+        className="bg-[#313338] text=white p-0 overflow-hidden"
+        onOpenAutoFocus={(event) => event.preventDefault()}
+      >
         <DialogHeader className="pt-8 px-6">
           <DialogTitle className="text-2xl text-center font-bold">
             Change your username
@@ -123,6 +128,7 @@ const EditUsernameModal = () => {
                       </FormLabel>
                       <FormControl>
                         <Input
+                          autoFocus
                           {...field}
                           disabled={isLoading}
                           placeholder=""

@@ -3,18 +3,19 @@ import {
   Member,
   Server,
   User,
+  UserDetails,
   UserServerData,
 } from "@prisma/client";
 import { Server as NetServer, Socket } from "net";
 import { NextApiResponse } from "next";
 import { Server as SocketIOServer } from "socket.io";
 import {
+  desensitizationArrayForUserDetails,
   desensitizationArrayforBannerColor,
   desensitizationArrayforServer,
   desensitizationArrayforUser,
   desensitizationArrayforUserServerData,
 } from "../../utils/desensitizationDatabaseData";
-
 
 export type ServerWithMembersWithUsers = Server & {
   members: (Member & {
@@ -42,6 +43,8 @@ type DesensitizationUserServerDataFieldsUnion =
   (typeof desensitizationArrayforUserServerData)[number];
 type DesensitizationServerFieldsUnion =
   (typeof desensitizationArrayforServer)[number];
+type DesensitizationUserDetailsFieldUnion =
+  (typeof desensitizationArrayForUserDetails)[number];
 
 export type DesensitizedUser = Omit<User, DesensitizationUserFieldsUnion>;
 export type DesensitizedBannerColor = Omit<
@@ -56,9 +59,13 @@ export type DesensitizationServer = Omit<
   Server,
   DesensitizationServerFieldsUnion
 >;
+export type DesensitizatizedUserDetails = Omit<
+  UserDetails,
+  DesensitizationUserDetailsFieldUnion
+>;
 
 export type DesensitizedUserBannerColor = DesensitizedUser & {
-  bannerColor: DesensitizedBannerColor[]; 
+  bannerColor: DesensitizedBannerColor[];
 };
 
 export type BannerColorWithUsers = User & {

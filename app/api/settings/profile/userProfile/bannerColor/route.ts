@@ -29,8 +29,6 @@ export async function GET() {
       },
     });
 
-    console.log(bannerColor)
-
     const desensitizatizedBannerColor = desensitizeDatabaseData(
       "User",
       ["BannerColor"],
@@ -115,8 +113,6 @@ export async function PATCH(request: Request, res: NextApiResponse) {
     const { bannerColor, isActive, oldColorValue } = body;
     const { user } = await getCurrentUser();
 
-    console.log(bannerColor)
-
     if (!user) {
       return new NextResponse("Unauthenticated", { status: 401 });
     }
@@ -154,8 +150,6 @@ export async function PATCH(request: Request, res: NextApiResponse) {
     if (!bannerColorToBeUpdated || bannerColorToBeUpdated.userId !== user.id) {
       return new NextResponse("Forbidden", { status: 403 });
     }
-
-    console.log(bannerColor)
 
     const updatedBannerColor = await prismadb.bannerColor.update({
       where: {

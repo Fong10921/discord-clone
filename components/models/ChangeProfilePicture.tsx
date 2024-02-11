@@ -42,8 +42,8 @@ const ChangeProfilePicture = () => {
       data?.utils.typeOfProfilePic === "server"
         ? "userServerDataBannerColor"
         : "userBannerColor";
-  };
-  
+  }
+
   const isModalOpen = isOpen && type === "changeProfilePicture";
 
   const form = useForm({
@@ -57,7 +57,7 @@ const ChangeProfilePicture = () => {
     values: z.infer<typeof formSchema>
   ) => {
     let response;
-    let updatedValue = {...values, ServerImage: data?.utils.profileImage}
+    let updatedValue = { ...values, ServerImage: data?.utils.profileImage };
     try {
       response = await axios.patch(apiRoute, updatedValue);
     } catch (error: any) {
@@ -81,12 +81,14 @@ const ChangeProfilePicture = () => {
 
   const updateMutation = useMutation({
     mutationFn: updatePATCHProfilePicture,
-    onSuccess: () => queryClient.invalidateQueries([invalidateQueries]),
+    onSuccess: () =>
+      queryClient.invalidateQueries({ queryKey: [invalidateQueries] }),
   });
 
   const deleteMutation = useMutation({
     mutationFn: deleteProfilePicture,
-    onSuccess: () => queryClient.invalidateQueries([invalidateQueries]),
+    onSuccess: () =>
+      queryClient.invalidateQueries({ queryKey: [invalidateQueries] }),
   });
 
   const onSubmit = async (values: z.infer<typeof formSchema>) => {

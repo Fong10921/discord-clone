@@ -21,12 +21,17 @@ export const desensitizationArrayforServer = [
   'inviteCode',
   'userId',
 ] as const
+export const desensitizationArrayForUserDetails = [
+  "id",
+  "userId",
+] as const
 
 const sensitiveFieldConfig = {
   User: desensitizationArrayforUser,
   BannerColor: desensitizationArrayforBannerColor,
   UserServerData: desensitizationArrayforUserServerData,
   Server: desensitizationArrayforServer,
+  UserDetails: desensitizationArrayForUserDetails,
   PrivateMessage: ["messageContent"] as const,
 };
 type SensitiveFieldsUnion =

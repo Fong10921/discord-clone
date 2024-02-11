@@ -5,19 +5,19 @@ import UserProfileButton from "@/components/UserProfileButton";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
-import Image from "next/image";
+import Image, { StaticImageData } from "next/image";
 import pencilImage from "@/public/images/pencil.png";
 import { cn } from "@/lib/utils";
 import { useEffect, useState } from "react";
 import { DesensitizedUserBannerColor } from "@/constants/types/types";
 
 type previewState = {
-  previewName?: string;
+  previewName?: string | null;
   previewNickname?: string;
-  previewPronouns?: string;
-  previewAboutMe?: string;
+  previewPronouns?: string | null;
+  previewAboutMe?: string | null;
   previewUserName?: string;
-  previewImage?: string | undefined | null;
+  previewImage?: string | StaticImageData | undefined;
   previewBannerColor?: any;
 };
 
@@ -64,7 +64,7 @@ const PreviewCard: React.FC<UserProfilePreviewCardProps> = ({
   };
 
   useEffect(() => {
-    const name = isEmpty(previewState.previewNickname)
+    const name = isEmpty(previewState.previewNickname || previewState.previewName)
       ? userProfile.name
       : previewState.previewName || previewState.previewNickname;
     const aboutMe = isEmpty(previewState.previewAboutMe)
@@ -100,7 +100,7 @@ const PreviewCard: React.FC<UserProfilePreviewCardProps> = ({
               src={
                 previewState.previewImage
                   ? previewState.previewImage
-                  : userProfile?.image!
+                  : userProfile.image!
               }
             />
           </div>

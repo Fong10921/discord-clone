@@ -57,9 +57,9 @@ interface UserProfileFormProps {
   isFetching: boolean;
   setPreviewState: Dispatch<
     SetStateAction<{
-      previewName: string;
-      previewPronouns: string;
-      previewAboutMe: string;
+      previewName: string | null;
+      previewPronouns: string | null;
+      previewAboutMe: string | null;
     }>
   >;
 }
@@ -130,7 +130,8 @@ const UserProfileForm: React.FC<UserProfileFormProps> = ({
 
   const updateMutation = useMutation({
     mutationFn: updatePatchProfile,
-    onSuccess: () => queryClient.invalidateQueries(["userBannerColor"]),
+    onSuccess: () =>
+      queryClient.invalidateQueries({ queryKey: ["userBannerColor"]}),
   });
 
   const onSubmit: SubmitHandler<profileFormValues> = (data) => {

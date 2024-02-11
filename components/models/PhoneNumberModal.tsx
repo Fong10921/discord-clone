@@ -40,12 +40,12 @@ const updatePhoneNumber = async (values: z.infer<typeof formSchema>) => {
   if (response.data.error) {
     throw new Error(response.data.error); // Adjust error handling as needed
   }
-
   return response.data;
 };
 
 const PhoneNumberModal = () => {
   const { isOpen, onClose, type, data } = useModal();
+  const [isLoading, setIsLoading] = useState(false);
 
   const isModalOpen = isOpen && type === "phoneNumber";
   const queryClient = useQueryClient();
@@ -80,12 +80,16 @@ const PhoneNumberModal = () => {
 
   const updateMutation = useMutation({
     mutationFn: updatePhoneNumber,
-    onSuccess: () => queryClient.invalidateQueries(["currentUser"]),
+    onSuccess: () => {
+      setIsLoading(true);
+      queryClient.invalidateQueries({ queryKey: ["currentUser"] });
+    },
   });
 
-  const { isLoading, isSuccess } = updateMutation;
+  const { isSuccess } = updateMutation;
 
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
+    setIsLoading(true);
     updateMutation.mutate(values);
   };
 
@@ -102,7 +106,10 @@ const PhoneNumberModal = () => {
 
   return (
     <Dialog open={isModalOpen} onOpenChange={handleClose}>
-      <DialogContent className="bg-[#313338] text-white p-0 overflow-hidden" onOpenAutoFocus={event => event.preventDefault()}>
+      <DialogContent
+        className="bg-[#313338] text-white p-0 overflow-hidden"
+        onOpenAutoFocus={(event) => event.preventDefault()}
+      >
         <DialogHeader className="pt-8 px-6">
           <DialogTitle className="text-2xl text-center font-bold">
             {data?.user?.phoneNumber
