@@ -28,7 +28,7 @@ export default async function RootLayout({
         <body className={cn("font-MyNewFont", "bg-white dark:bg-[#313338]")}>
           <ThemeProvider
             attribute="class"
-            defaultTheme=""
+            defaultTheme="dark"
             enableSystem={false}
             storageKey="Something Unique"
           >

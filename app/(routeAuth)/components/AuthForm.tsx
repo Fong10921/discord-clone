@@ -30,7 +30,7 @@ const registerSchema = z.object({
     .string()
     .min(8, "Password must be at least 8 characters long")
     .refine(
-      (password) => /[a.z]/.test(password),
+      (password) => /[a-z]/.test(password),
       "Password must contain at least one lowercase letter"
     )
     .refine(
@@ -53,7 +53,7 @@ const loginSchema = z.object({
     .string()
     .min(8, "Password must be at least 8 characters long")
     .refine(
-      (password) => /[a.z]/.test(password),
+      (password) => /[a-z]/.test(password),
       "Password must contain at least one lowercase letter"
     )
     .refine(
@@ -122,7 +122,7 @@ const AuthForm = () => {
       setAlreadyExistedError(false);
       resetForm();
     }
-  }, [variant]);
+  }, [resetForm, variant]);
 
   const onSubmit: SubmitHandler<AuthFormValues> = async (
     data: AuthFormValues
@@ -254,6 +254,7 @@ const AuthForm = () => {
                   <FormLabel className="text-lg">Password</FormLabel>
                   <FormControl>
                     <Input
+                      type="password"
                       className="text-black dark:text-white dark:bg-[#2B2D31] bg-[#F2F3F5] shadow-sm focus:ring-offset-blue-700 focus-visible:ring-0 focus-visible:ring-offset-[5px]"
                       disabled={isLoading}
                       placeholder="Password"
